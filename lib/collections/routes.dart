@@ -41,6 +41,10 @@ class AppRouter extends RootStackRouter {
               ],
             ),
             AutoRoute(
+              path: "pt34/home",
+              page: Pt34HomeRoute.page,
+            ),
+            AutoRoute(
               path: "home/sections/:sectionId",
               page: HomeBrowseSectionItemsRoute.page,
             ),
@@ -132,6 +136,7 @@ class AppRouter extends RootStackRouter {
                   (resolver) {
                     final PlaylistRouteArgs(:id, :playlist) =
                         resolver.route.args as PlaylistRouteArgs;
+
                     if (id == "user-liked-tracks") {
                       return LikedPlaylistRoute(playlist: playlist);
                     }
