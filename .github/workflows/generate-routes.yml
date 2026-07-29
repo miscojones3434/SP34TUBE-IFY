@@ -37,6 +37,9 @@ jobs:
       - name: Descargar dependencias
         run: flutter pub get
 
+      - name: Preparar variables de entorno para generación
+        run: cp .env.example .env
+
       - name: Generar rutas y archivos automáticos
         run: dart run build_runner build --delete-conflicting-outputs
 
