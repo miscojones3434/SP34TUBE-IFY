@@ -70,7 +70,7 @@ class Pt34ProfilePage extends HookConsumerWidget {
                 }
 
                 final currentProfile = profile;
-                final externalUri = currentProfile.externalUri ?? '';
+                final externalUri = currentProfile.externalUri;
 
                 return CustomScrollView(
                   slivers: [
