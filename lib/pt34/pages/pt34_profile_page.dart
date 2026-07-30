@@ -60,7 +60,17 @@ class Pt34ProfilePage extends HookConsumerWidget {
                 message: error.toString(),
               ),
               data: (profile) {
-                final externalUri = profile.externalUri ?? '';
+                if (profile == null) {
+                  return const _ProfileMessage(
+                    title: 'Perfil no disponible',
+                    message:
+                        'La sesión está conectada, pero el proveedor todavía '
+                        'no ha entregado los datos del perfil del usuario.',
+                  );
+                }
+
+                final currentProfile = profile;
+                final externalUri = currentProfile.externalUri ?? '';
 
                 return CustomScrollView(
                   slivers: [
@@ -73,7 +83,7 @@ class Pt34ProfilePage extends HookConsumerWidget {
                             ClipRRect(
                               borderRadius: BorderRadius.circular(600),
                               child: UniversalImage(
-                                path: profile.images.asUrlString(
+                                path: currentProfile.images.asUrlString(
                                   index: 1,
                                   placeholder: ImagePlaceholder.artist,
                                 ),
@@ -84,7 +94,7 @@ class Pt34ProfilePage extends HookConsumerWidget {
                             ),
                             const Gap(20),
                             Text(
-                              profile.name,
+                              currentProfile.name,
                               textAlign: TextAlign.center,
                             ).h2(),
                             const Gap(8),
@@ -104,7 +114,7 @@ class Pt34ProfilePage extends HookConsumerWidget {
                                     const Text('Cuenta conectada').h3(),
                                     const Gap(8),
                                     Text(
-                                      'Usuario: ${profile.name}',
+                                      'Usuario: ${currentProfile.name}',
                                     ),
                                     const Gap(8),
                                     const Text(
