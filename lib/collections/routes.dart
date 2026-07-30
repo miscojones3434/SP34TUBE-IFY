@@ -45,6 +45,10 @@ class AppRouter extends RootStackRouter {
               page: Pt34HomeRoute.page,
             ),
             AutoRoute(
+              path: "pt34/activity",
+              page: Pt34MyActivityRoute.page,
+            ),
+            AutoRoute(
               path: "home/sections/:sectionId",
               page: HomeBrowseSectionItemsRoute.page,
             ),
