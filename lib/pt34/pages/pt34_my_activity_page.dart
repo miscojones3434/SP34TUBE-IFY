@@ -39,15 +39,15 @@ class Pt34MyActivityPage extends HookConsumerWidget {
                       'Tu actividad musical dentro de SP34TUBE-IFY.',
                     ).muted(),
                     const Gap(32),
-                    const Card(
+                    Card(
                       child: Padding(
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Actividad de escucha').h3(),
-                            Gap(8),
-                            Text(
+                            const Text('Actividad de escucha').h3(),
+                            const Gap(8),
+                            const Text(
                               'Aquí se conectarán progresivamente tus '
                               'reproducciones, artistas, álbumes, listas y '
                               'estadísticas reales proporcionadas por Spotube.',
@@ -57,15 +57,15 @@ class Pt34MyActivityPage extends HookConsumerWidget {
                       ),
                     ),
                     const Gap(16),
-                    const Card(
+                    Card(
                       child: Padding(
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Actividad de creación').h3(),
-                            Gap(8),
-                            Text(
+                            const Text('Actividad de creación').h3(),
+                            const Gap(8),
+                            const Text(
                               'Aquí se mostrarán tus canciones, proyectos, '
                               'generaciones y procesos propios de PT34 cuando '
                               'sus proveedores reales estén conectados.',
@@ -75,15 +75,15 @@ class Pt34MyActivityPage extends HookConsumerWidget {
                       ),
                     ),
                     const Gap(16),
-                    const Card(
+                    Card(
                       child: Padding(
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Motores originales intactos').h3(),
-                            Gap(8),
-                            Text(
+                            const Text('Motores originales intactos').h3(),
+                            const Gap(8),
+                            const Text(
                               'Esta pantalla no sustituye ni desactiva las '
                               'estadísticas, el historial ni los sistemas '
                               'originales de Spotube.',
