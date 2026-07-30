@@ -111,6 +111,40 @@ class Pt34HomePage extends HookConsumerWidget {
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.person),
+                            const Gap(12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Perfil PT34').h3(),
+                                  const Gap(6),
+                                  const Text(
+                                    'Consulta el perfil real de la cuenta '
+                                    'conectada mediante el proveedor configurado.',
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Gap(12),
+                            Button.outline(
+                              onPressed: () {
+                                context.navigateTo(
+                                  const Pt34ProfileRoute(),
+                                );
+                              },
+                              child: const Text('Abrir'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const Gap(16),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
