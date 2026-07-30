@@ -47,13 +47,13 @@ class Pt34HomePage extends HookConsumerWidget {
                           children: [
                             const Icon(Icons.history),
                             const Gap(12),
-                            const Expanded(
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text('Mi actividad').h3(),
-                                  Gap(6),
-                                  Text(
+                                  const Text('Mi actividad').h3(),
+                                  const Gap(6),
+                                  const Text(
                                     'Consulta tu actividad musical y el progreso '
                                     'de tus funciones PT34.',
                                   ),
@@ -74,15 +74,15 @@ class Pt34HomePage extends HookConsumerWidget {
                       ),
                     ),
                     const Gap(16),
-                    const Card(
+                    Card(
                       child: Padding(
-                        padding: EdgeInsets.all(16),
+                        padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text('Próximas secciones').h3(),
-                            Gap(8),
-                            Text(
+                            const Text('Próximas secciones').h3(),
+                            const Gap(8),
+                            const Text(
                               'Mis canciones, creación musical con IA, '
                               'distribución musical y perfil PT34.',
                             ),
