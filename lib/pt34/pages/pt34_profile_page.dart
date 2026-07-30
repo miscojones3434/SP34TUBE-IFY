@@ -60,6 +60,8 @@ class Pt34ProfilePage extends HookConsumerWidget {
                 message: error.toString(),
               ),
               data: (profile) {
+                final externalUri = profile.externalUri ?? '';
+
                 return CustomScrollView(
                   slivers: [
                     const SliverGap(24),
@@ -115,12 +117,12 @@ class Pt34ProfilePage extends HookConsumerWidget {
                               ),
                             ),
                             const Gap(16),
-                            if (profile.externalUri.isNotEmpty)
+                            if (externalUri.isNotEmpty)
                               Button.outline(
                                 leading: const Icon(Icons.open_in_new),
                                 onPressed: () {
                                   launchUrlString(
-                                    profile.externalUri,
+                                    externalUri,
                                     mode: LaunchMode.externalApplication,
                                   );
                                 },
