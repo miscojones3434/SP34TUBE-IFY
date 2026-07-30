@@ -1,0 +1,59 @@
+name: Comprobar integración PT34
+
+on:
+  push:
+    paths:
+      - "build.yaml"
+      - "pubspec.yaml"
+      - "lib/collections/routes.dart"
+      - "lib/collections/routes.gr.dart"
+      - "lib/collections/side_bar_tiles.dart"
+      - "lib/pt34/**"
+      - ".github/workflows/check-pt34-integration.yml"
+  workflow_dispatch:
+
+jobs:
+  check-pt34:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Descargar repositorio
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+
+      - name: Instalar Flutter compatible
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.44.8"
+          channel: stable
+          cache: true
+
+      - name: Mostrar versiones
+        run: |
+          flutter --version
+          dart --version
+
+      - name: Descargar dependencias
+        run: flutter pub get
+
+      - name: Preparar entorno temporal
+        run: |
+          cat > .env <<'EOF'
+          ENABLE_UPDATE_CHECK=1
+          LASTFM_API_KEY=
+          LASTFM_API_SECRET=
+          RELEASE_CHANNEL=nightly
+          HIDE_DONATIONS=0
+          EOF
+
+      - name: Generar archivos necesarios
+        run: dart run build_runner build --delete-conflicting-outputs
+
+      - name: Comprobar archivos PT34 y navegación
+        run: |
+          flutter analyze \
+            lib/pt34 \
+            lib/collections/routes.dart \
+            lib/collections/routes.gr.dart \
+            lib/collections/side_bar_tiles.dart
