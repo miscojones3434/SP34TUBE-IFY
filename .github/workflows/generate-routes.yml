@@ -3,6 +3,7 @@ name: Generar rutas Flutter
 on:
   push:
     paths:
+      - "build.yaml"
       - "lib/collections/routes.dart"
       - "lib/pt34/pages/**"
       - "pubspec.yaml"
