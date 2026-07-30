@@ -77,14 +77,48 @@ class Pt34HomePage extends HookConsumerWidget {
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.library_music),
+                            const Gap(12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Mis canciones').h3(),
+                                  const Gap(6),
+                                  const Text(
+                                    'Accede a tus canciones y proyectos '
+                                    'musicales propios de PT34.',
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Gap(12),
+                            Button.outline(
+                              onPressed: () {
+                                context.navigateTo(
+                                  const Pt34MySongsRoute(),
+                                );
+                              },
+                              child: const Text('Abrir'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const Gap(16),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text('Próximas secciones').h3(),
                             const Gap(8),
                             const Text(
-                              'Mis canciones, creación musical con IA, '
-                              'distribución musical y perfil PT34.',
+                              'Creación musical con IA, distribución musical '
+                              'y perfil PT34.',
                             ),
                           ],
                         ),
