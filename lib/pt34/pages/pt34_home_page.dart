@@ -1,7 +1,6 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:sliver_tools/sliver_tools.dart';
 import 'package:spotube/components/titlebar/titlebar.dart';
 import 'package:spotube/pt34/core/pt34_brand.dart';
 
