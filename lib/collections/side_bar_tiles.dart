@@ -49,6 +49,13 @@ List<SideBarTiles> getSidebarTileList(AppLocalizations l10n) => [
         icon: SpotubeIcons.chart,
         title: l10n.stats,
       ),
+      SideBarTiles(
+        id: "pt34_home",
+        pathPrefix: "/pt34/home",
+        route: const Pt34HomeRoute(),
+        icon: SpotubeIcons.music,
+        title: "SP34TUBE-IFY",
+      ),
     ];
 
 List<SideBarTiles> getSidebarLibraryTileList(AppLocalizations l10n) => [
@@ -110,5 +117,12 @@ List<SideBarTiles> getNavbarTileList(AppLocalizations l10n) => [
         route: const StatsRoute(),
         icon: SpotubeIcons.chart,
         title: l10n.stats,
+      ),
+      SideBarTiles(
+        id: "pt34_home",
+        pathPrefix: "/pt34/home",
+        route: const Pt34HomeRoute(),
+        icon: SpotubeIcons.music,
+        title: "SP34TUBE-IFY",
       ),
     ];
