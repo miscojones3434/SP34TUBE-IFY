@@ -62,10 +62,10 @@ class HomeRecentlyPlayedSection extends HookConsumerWidget {
                   SizedBox(
                     width: itemWidth,
                     child: item.playlist != null
-                        ? PlaylistCard.tile(
+                        ? PlaylistCard.compactTile(
                             item.playlist!,
                           )
-                        : AlbumCard.tile(
+                        : AlbumCard.compactTile(
                             item.album!,
                           ),
                   ),
