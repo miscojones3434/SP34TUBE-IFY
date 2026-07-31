@@ -26,7 +26,7 @@ jobs:
       - name: Instalar Flutter
         uses: subosito/flutter-action@v2.18.0
         with:
-          flutter-version: "3.44.8"
+          flutter-version: "3.35.2"
           channel: stable
           cache: true
 
@@ -83,7 +83,7 @@ jobs:
       - name: Compilar APK Android
         env:
           CHANNEL: stable
-          FLUTTER_VERSION: "3.44.8"
+          FLUTTER_VERSION: "3.35.2"
           DOTENV: |
             ENABLE_UPDATE_CHECK=0
             LASTFM_API_KEY=
