@@ -1,4 +1,5 @@
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:shadcn_flutter/shadcn_flutter_extension.dart';
 import 'package:spotube/collections/spotube_icons.dart';
 import 'package:spotube/components/image/universal_image.dart';
 import 'package:spotube/extensions/context.dart';
@@ -17,6 +18,10 @@ class PlaybuttonTile extends StatelessWidget {
   final String title;
   final bool isOwner;
 
+  /// Diseño compacto para los accesos rápidos de Inicio.
+  /// No muestra controles permanentes de cola ni reproducción.
+  final bool compact;
+
   const PlaybuttonTile({
     required this.isPlaying,
     required this.isLoading,
@@ -28,6 +33,7 @@ class PlaybuttonTile extends StatelessWidget {
     this.isOwner = false,
     this.imageUrl,
     this.image,
+    this.compact = false,
     super.key,
   }) : assert(
           imageUrl != null || image != null,
@@ -37,52 +43,56 @@ class PlaybuttonTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cleanDescription =
-        description?.unescapeHtml().cleanHtml() ?? '';
+        description?.unescapeHtml().cleanHtml() ?? "";
     final scale = context.theme.scaling;
 
-    return Container(
-      height: 64 * scale,
-      decoration: BoxDecoration(
-        color: const Color(0xFF2A2A2A),
-        borderRadius: BorderRadius.circular(5 * scale),
-      ),
-      clipBehavior: Clip.antiAlias,
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: isLoading ? null : onTap,
-            behavior: HitTestBehavior.opaque,
-            child: imageUrl != null
-                ? SizedBox(
-                    width: 64 * scale,
-                    height: 64 * scale,
-                    child: UniversalImage(
-                      path: imageUrl!,
-                      fit: BoxFit.cover,
+    if (compact) {
+      return Button(
+        enabled: !isLoading,
+        onPressed: onTap,
+        style: ButtonVariance.ghost.copyWith(
+          padding: (context, states, value) => EdgeInsets.zero,
+          decoration: (context, states, value) {
+            return BoxDecoration(
+              color: const Color(0xFF2A2A2A),
+              borderRadius: BorderRadius.circular(5 * scale),
+            );
+          },
+        ),
+        child: SizedBox(
+          height: 64 * scale,
+          child: Row(
+            children: [
+              imageUrl != null
+                  ? SizedBox(
+                      width: 64 * scale,
+                      height: 64 * scale,
+                      child: UniversalImage(
+                        path: imageUrl!,
+                        fit: BoxFit.cover,
+                      ),
+                    )
+                  : SizedBox(
+                      width: 64 * scale,
+                      height: 64 * scale,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.horizontal(
+                          left: Radius.circular(5 * scale),
+                        ),
+                        child: image,
+                      ),
                     ),
-                  )
-                : SizedBox(
-                    width: 64 * scale,
-                    height: 64 * scale,
-                    child: image,
+              Expanded(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: 12 * scale,
+                    vertical: 8 * scale,
                   ),
-          ),
-          Expanded(
-            child: GestureDetector(
-              onTap: isLoading ? null : onTap,
-              behavior: HitTestBehavior.opaque,
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: 12 * scale,
-                  vertical: 8 * scale,
-                ),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
                       title,
-                      maxLines: cleanDescription.isEmpty ? 2 : 1,
+                      maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
                         color: Colors.white,
@@ -91,79 +101,116 @@ class PlaybuttonTile extends StatelessWidget {
                         height: 1.15,
                       ),
                     ),
-                    if (cleanDescription.isNotEmpty) ...[
-                      const Gap(3),
-                      Text(
-                        cleanDescription,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          color: Color(0xFFB3B3B3),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ],
+                  ),
                 ),
               ),
-            ),
+              if (isLoading)
+                Padding(
+                  padding: EdgeInsets.only(
+                    right: 12 * scale,
+                  ),
+                  child: const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      size: 20,
+                    ),
+                  ),
+                ),
+            ],
           ),
-          if (onAddToQueuePressed != null)
-            Tooltip(
-              tooltip: TooltipContainer(
-                child: Text(context.l10n.add_to_queue),
-              ).call,
-              child: IconButton.ghost(
-                size: ButtonSize.small,
-                icon: const Icon(
-                  SpotubeIcons.queueAdd,
-                  color: Color(0xFFB3B3B3),
-                  size: 18,
+        ),
+      );
+    }
+
+    return Button(
+      leading: imageUrl != null
+          ? Container(
+              width: 50 * scale,
+              height: 50 * scale,
+              decoration: BoxDecoration(
+                borderRadius: context.theme.borderRadiusMd,
+                image: DecorationImage(
+                  image: UniversalImage.imageProvider(imageUrl!),
+                  fit: BoxFit.cover,
                 ),
-                enabled: !isLoading,
-                onPressed: onAddToQueuePressed,
+              ),
+            )
+          : SizedBox(
+              width: 50 * scale,
+              height: 50 * scale,
+              child: ClipRRect(
+                borderRadius: context.theme.borderRadiusMd,
+                child: image,
               ),
             ),
+      style: ButtonVariance.ghost.copyWith(
+        padding: (context, states, value) {
+          return (ButtonVariance.ghost.padding(
+            context,
+            states,
+          ) as EdgeInsets)
+              .copyWith(
+            right: 0,
+            left: 0,
+          );
+        },
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
           Tooltip(
             tooltip: TooltipContainer(
               child: Text(
-                isPlaying
-                    ? context.l10n.pause
-                    : context.l10n.play,
+                context.l10n.add_to_queue,
               ),
             ).call,
-            child: IconButton.ghost(
-              size: ButtonSize.small,
+            child: IconButton.outline(
+              icon: const Icon(
+                SpotubeIcons.queueAdd,
+              ),
+              onPressed: onAddToQueuePressed,
               enabled: !isLoading,
-              onPressed: onPlaybuttonPressed,
-              icon: isLoading
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(
-                        size: 20,
-                      ),
-                    )
-                  : Container(
-                      width: 34,
-                      height: 34,
-                      alignment: Alignment.center,
-                      decoration: const BoxDecoration(
-                        color: Color(0xFF1ED760),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Icon(
-                        isPlaying
-                            ? SpotubeIcons.pause
-                            : SpotubeIcons.play,
-                        color: Colors.black,
-                        size: 18,
-                      ),
-                    ),
             ),
           ),
-          Gap(4 * scale),
+          const Gap(8),
+          Tooltip(
+            tooltip: TooltipContainer(
+              child: Text(
+                context.l10n.play,
+              ),
+            ).call,
+            child: IconButton.secondary(
+              icon: switch ((isLoading, isPlaying)) {
+                (true, _) => const CircularProgressIndicator(
+                    size: 22,
+                  ),
+                (false, false) => const Icon(
+                    SpotubeIcons.play,
+                  ),
+                (false, true) => const Icon(
+                    SpotubeIcons.pause,
+                  ),
+              },
+              onPressed: onPlaybuttonPressed,
+              enabled: !isLoading,
+            ),
+          ),
+        ],
+      ),
+      enabled: !isLoading,
+      onPressed: onTap,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title),
+          if (cleanDescription.isNotEmpty)
+            Text(
+              description!,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ).xSmall().muted(),
         ],
       ),
     );
