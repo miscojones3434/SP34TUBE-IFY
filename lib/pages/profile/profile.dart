@@ -51,13 +51,11 @@ class ProfilePage extends HookConsumerWidget {
                             shape: BoxShape.circle,
                           ),
                           child: ClipRRect(
-                            borderRadius:
-                                BorderRadius.circular(600),
+                            borderRadius: BorderRadius.circular(600),
                             child: UniversalImage(
                               path: meData.images.asUrlString(
                                 index: 1,
-                                placeholder:
-                                    ImagePlaceholder.artist,
+                                placeholder: ImagePlaceholder.artist,
                               ),
                               width: 190,
                               height: 190,
@@ -98,8 +96,7 @@ class ProfilePage extends HookConsumerWidget {
                           onPressed: () {
                             launchUrlString(
                               meData.externalUri,
-                              mode:
-                                  LaunchMode.externalApplication,
+                              mode: LaunchMode.externalApplication,
                             );
                           },
                           child: const Text(
@@ -126,27 +123,26 @@ class ProfilePage extends HookConsumerWidget {
                         padding: const EdgeInsets.all(18),
                         decoration: BoxDecoration(
                           color: const Color(0xFF242424),
-                          borderRadius:
-                              BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(12),
                         ),
-                        child: const Row(
+                        child: Row(
                           children: [
                             Container(
                               width: 42,
                               height: 42,
                               alignment: Alignment.center,
-                              decoration: BoxDecoration(
+                              decoration: const BoxDecoration(
                                 color: Color(0xFF1ED760),
                                 shape: BoxShape.circle,
                               ),
-                              child: Icon(
+                              child: const Icon(
                                 SpotubeIcons.user,
                                 color: Colors.black,
                                 size: 22,
                               ),
                             ),
-                            Gap(14),
-                            Expanded(
+                            const Gap(14),
+                            const Expanded(
                               child: Column(
                                 crossAxisAlignment:
                                     CrossAxisAlignment.start,
@@ -156,16 +152,14 @@ class ProfilePage extends HookConsumerWidget {
                                     style: TextStyle(
                                       color: Colors.white,
                                       fontSize: 16,
-                                      fontWeight:
-                                          FontWeight.w700,
+                                      fontWeight: FontWeight.w700,
                                     ),
                                   ),
                                   Gap(4),
                                   Text(
                                     'Tus playlists, artistas, álbumes y biblioteca pertenecen a la cuenta conectada.',
                                     style: TextStyle(
-                                      color:
-                                          Color(0xFFB3B3B3),
+                                      color: Color(0xFFB3B3B3),
                                       fontSize: 13,
                                       height: 1.35,
                                     ),
