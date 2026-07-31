@@ -1,3 +1,4 @@
+import 'package:auto_route/auto_route.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -10,7 +11,6 @@ import 'package:spotube/extensions/context.dart';
 import 'package:spotube/models/metadata/metadata.dart';
 import 'package:spotube/provider/metadata_plugin/core/user.dart';
 import 'package:url_launcher/url_launcher_string.dart';
-import 'package:auto_route/auto_route.dart';
 
 @RoutePage()
 class ProfilePage extends HookConsumerWidget {
@@ -19,120 +19,169 @@ class ProfilePage extends HookConsumerWidget {
   const ProfilePage({super.key});
 
   @override
-  Widget build(BuildContext context, ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final me = ref.watch(metadataPluginUserProvider);
     final meData = me.asData?.value ?? FakeData.user;
-
-    // final userProperties = useMemoized(
-    //   () => {
-    //     context.l10n.email: meData.email ?? "N/A",
-    //     context.l10n.profile_followers:
-    //         meData.followers?.total.toString() ?? "N/A",
-    //     context.l10n.birthday: meData.birthdate ?? context.l10n.not_born,
-    //     context.l10n.country: markets
-    //         .firstWhere((market) => market.$1 == meData.country)
-    //         .$2,
-    //     context.l10n.subscription: meData.product ?? context.l10n.hacker,
-    //   },
-    //   [meData],
-    // );
 
     return SafeArea(
       child: Scaffold(
         headers: [
           TitleBar(
             title: Text(context.l10n.profile),
-          )
+          ),
         ],
-        child: Skeletonizer(
-          enabled: me.isLoading,
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(600),
-                      child: UniversalImage(
-                        path: meData.images.asUrlString(
-                          index: 1,
-                          placeholder: ImagePlaceholder.artist,
-                        ),
-                        width: 300,
-                        height: 300,
-                        fit: BoxFit.cover,
-                      ),
+        child: ColoredBox(
+          color: const Color(0xFF121212),
+          child: Skeletonizer(
+            enabled: me.isLoading,
+            child: CustomScrollView(
+              slivers: [
+                const SliverGap(24),
+                SliverToBoxAdapter(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
                     ),
-                  ],
-                ),
-              ),
-              const SliverGap(10),
-              SliverToBoxAdapter(
-                child: Text(
-                  meData.name,
-                  textAlign: TextAlign.center,
-                ).h4(),
-              ),
-              const SliverGap(20),
-              SliverCrossAxisConstrained(
-                maxCrossAxisExtent: 500,
-                child: SliverToBoxAdapter(
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    children: [
-                      Button.text(
-                        leading: const Icon(SpotubeIcons.edit),
-                        onPressed: () {
-                          launchUrlString(
-                            meData.externalUri,
-                            mode: LaunchMode.externalApplication,
-                          );
-                        },
-                        child: Text(context.l10n.edit),
-                      ),
-                    ],
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(4),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFF1ED760),
+                            shape: BoxShape.circle,
+                          ),
+                          child: ClipRRect(
+                            borderRadius:
+                                BorderRadius.circular(600),
+                            child: UniversalImage(
+                              path: meData.images.asUrlString(
+                                index: 1,
+                                placeholder:
+                                    ImagePlaceholder.artist,
+                              ),
+                              width: 190,
+                              height: 190,
+                              fit: BoxFit.cover,
+                            ),
+                          ),
+                        ),
+                        const Gap(20),
+                        Text(
+                          meData.name,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 28,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.6,
+                          ),
+                        ),
+                        const Gap(8),
+                        const Text(
+                          'Cuenta conectada',
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            color: Color(0xFFB3B3B3),
+                            fontSize: 14,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const Gap(24),
+                        Button.outline(
+                          leading: const Icon(
+                            SpotubeIcons.edit,
+                            color: Colors.white,
+                            size: 19,
+                          ),
+                          onPressed: () {
+                            launchUrlString(
+                              meData.externalUri,
+                              mode:
+                                  LaunchMode.externalApplication,
+                            );
+                          },
+                          child: const Text(
+                            'Abrir perfil',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
-              // SliverCrossAxisConstrained(
-              //   maxCrossAxisExtent: 500,
-              //   child: SliverToBoxAdapter(
-              //     child: Card(
-              //       child: Padding(
-              //         padding: const EdgeInsets.all(8.0),
-              //         child: Table(
-              //           columnWidths: const {
-              //             0: FixedTableSize(120),
-              //           },
-              //           defaultRowHeight: const FixedTableSize(40),
-              //           rows: [
-              //             for (final MapEntry(:key, :value)
-              //                 in userProperties.entries)
-              //               TableRow(
-              //                 cells: [
-              //                   TableCell(
-              //                     child: Padding(
-              //                       padding: const EdgeInsets.all(6),
-              //                       child: Text(key).large(),
-              //                     ),
-              //                   ),
-              //                   TableCell(
-              //                     child: Padding(
-              //                       padding: const EdgeInsets.all(6),
-              //                       child: Text(value),
-              //                     ),
-              //                   ),
-              //                 ],
-              //               )
-              //           ],
-              //         ),
-              //       ),
-              //     ),
-              //   ),
-              // ),
-              const SliverGap(200),
-            ],
+                const SliverGap(28),
+                SliverCrossAxisConstrained(
+                  maxCrossAxisExtent: 500,
+                  child: SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 20,
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.all(18),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF242424),
+                          borderRadius:
+                              BorderRadius.circular(12),
+                        ),
+                        child: const Row(
+                          children: [
+                            Container(
+                              width: 42,
+                              height: 42,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: Color(0xFF1ED760),
+                                shape: BoxShape.circle,
+                              ),
+                              child: Icon(
+                                SpotubeIcons.user,
+                                color: Colors.black,
+                                size: 22,
+                              ),
+                            ),
+                            Gap(14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment:
+                                    CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Perfil de SP34TUBE-IFY',
+                                    style: TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 16,
+                                      fontWeight:
+                                          FontWeight.w700,
+                                    ),
+                                  ),
+                                  Gap(4),
+                                  Text(
+                                    'Tus playlists, artistas, álbumes y biblioteca pertenecen a la cuenta conectada.',
+                                    style: TextStyle(
+                                      color:
+                                          Color(0xFFB3B3B3),
+                                      fontSize: 13,
+                                      height: 1.35,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SliverGap(200),
+              ],
+            ),
           ),
         ),
       ),
