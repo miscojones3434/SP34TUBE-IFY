@@ -13,21 +13,27 @@ import 'package:spotube/utils/platform.dart';
 
 class TrackPresentation extends HookConsumerWidget {
   final TrackPresentationOptions options;
+
   const TrackPresentation({
     super.key,
     required this.options,
   });
 
   @override
-  Widget build(BuildContext context, ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final scrollController = useScrollController();
     final focusNode = useFocusNode();
     final scale = context.theme.scaling;
 
     useEffect(() {
-      if (!kIsMobile) return null;
+      if (!kIsMobile) {
+        return null;
+      }
+
       void listener() {
-        if (!scrollController.hasClients) return;
+        if (!scrollController.hasClients) {
+          return;
+        }
 
         if (focusNode.hasFocus) {
           scrollController.animateTo(
@@ -39,6 +45,7 @@ class TrackPresentation extends HookConsumerWidget {
       }
 
       focusNode.addListener(listener);
+
       return () {
         focusNode.removeListener(listener);
       };
@@ -49,45 +56,97 @@ class TrackPresentation extends HookConsumerWidget {
       child: SafeArea(
         bottom: false,
         child: Scaffold(
-          headers: const [TitleBar()],
-          child: CustomScrollView(
-            controller: scrollController,
-            slivers: [
-              const TrackPresentationTopSection(),
-              const SliverGap(16),
-              SliverList.list(
-                children: [
-                  TrackPresentationModifiersSection(
-                    focusNode: focusNode,
-                  ),
-                  LayoutBuilder(builder: (context, constrains) {
-                    return Basic(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 8,
-                        horizontal: 16,
-                      ),
-                      leading: constrains.mdAndUp ? const Text("  #") : null,
-                      title: Row(
-                        children: [
-                          Expanded(
-                            flex: constrains.lgAndUp ? 5 : 6,
-                            child: Text(context.l10n.title),
+          headers: const [
+            TitleBar(),
+          ],
+          child: ColoredBox(
+            color: const Color(0xFF121212),
+            child: CustomScrollView(
+              controller: scrollController,
+              slivers: [
+                const TrackPresentationTopSection(),
+                const SliverGap(16),
+                SliverList.list(
+                  children: [
+                    TrackPresentationModifiersSection(
+                      focusNode: focusNode,
+                    ),
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        return Container(
+                          margin: const EdgeInsets.symmetric(
+                            horizontal: 16,
                           ),
-                          if (constrains.mdAndUp)
-                            Expanded(
-                              flex: 3,
-                              child: Text(context.l10n.album),
+                          decoration: const BoxDecoration(
+                            border: Border(
+                              bottom: BorderSide(
+                                color: Color(0xFF2A2A2A),
+                                width: 1,
+                              ),
                             ),
-                          Text(context.l10n.duration),
-                        ],
-                      ),
-                    ).small().muted();
-                  }),
-                ],
-              ),
-              const PresentationListSection(),
-              const SliverSafeArea(sliver: SliverGap(10)),
-            ],
+                          ),
+                          child: Basic(
+                            padding: const EdgeInsets.symmetric(
+                              vertical: 10,
+                              horizontal: 4,
+                            ),
+                            leading: constraints.mdAndUp
+                                ? const Text(
+                                    '#',
+                                    style: TextStyle(
+                                      color: Color(0xFFB3B3B3),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  )
+                                : null,
+                            title: Row(
+                              children: [
+                                Expanded(
+                                  flex: constraints.lgAndUp ? 5 : 6,
+                                  child: Text(
+                                    context.l10n.title,
+                                    style: const TextStyle(
+                                      color: Color(0xFFB3B3B3),
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ),
+                                if (constraints.mdAndUp)
+                                  Expanded(
+                                    flex: 3,
+                                    child: Text(
+                                      context.l10n.album,
+                                      style: const TextStyle(
+                                        color: Color(0xFFB3B3B3),
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                    ),
+                                  ),
+                                Text(
+                                  context.l10n.duration,
+                                  style: const TextStyle(
+                                    color: Color(0xFFB3B3B3),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ],
+                ),
+                const PresentationListSection(),
+                const SliverSafeArea(
+                  sliver: SliverGap(10),
+                ),
+              ],
+            ),
           ),
         ),
       ),
