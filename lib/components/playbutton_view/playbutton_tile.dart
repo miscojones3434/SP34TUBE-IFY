@@ -47,41 +47,41 @@ class PlaybuttonTile extends StatelessWidget {
     final scale = context.theme.scaling;
 
     if (compact) {
-      return Button(
-        enabled: !isLoading,
-        onPressed: onTap,
-        style: ButtonVariance.ghost.copyWith(
-          padding: (context, states, value) => EdgeInsets.zero,
-          decoration: (context, states, value) {
-            return BoxDecoration(
-              color: const Color(0xFF2A2A2A),
-              borderRadius: BorderRadius.circular(5 * scale),
-            );
-          },
+      return Container(
+        height: 64 * scale,
+        decoration: BoxDecoration(
+          color: const Color(0xFF2A2A2A),
+          borderRadius: BorderRadius.circular(5 * scale),
         ),
-        child: SizedBox(
-          height: 64 * scale,
+        clipBehavior: Clip.antiAlias,
+        child: Button(
+          enabled: !isLoading,
+          onPressed: onTap,
+          style: ButtonVariance.ghost.copyWith(
+            padding: (context, states, value) => EdgeInsets.zero,
+          ),
           child: Row(
             children: [
-              imageUrl != null
-                  ? SizedBox(
-                      width: 64 * scale,
-                      height: 64 * scale,
-                      child: UniversalImage(
-                        path: imageUrl!,
-                        fit: BoxFit.cover,
-                      ),
-                    )
-                  : SizedBox(
-                      width: 64 * scale,
-                      height: 64 * scale,
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.horizontal(
-                          left: Radius.circular(5 * scale),
-                        ),
-                        child: image,
-                      ),
+              if (imageUrl != null)
+                SizedBox(
+                  width: 64 * scale,
+                  height: 64 * scale,
+                  child: UniversalImage(
+                    path: imageUrl!,
+                    fit: BoxFit.cover,
+                  ),
+                )
+              else
+                SizedBox(
+                  width: 64 * scale,
+                  height: 64 * scale,
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.horizontal(
+                      left: Radius.circular(5 * scale),
                     ),
+                    child: image,
+                  ),
+                ),
               Expanded(
                 child: Padding(
                   padding: EdgeInsets.symmetric(
