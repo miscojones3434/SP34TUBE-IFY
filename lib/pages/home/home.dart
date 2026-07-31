@@ -2,16 +2,17 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/collections/routes.gr.dart';
-import 'package:spotube/collections/spotube_icons.dart';
-import 'package:spotube/models/database/database.dart';
-import 'package:spotube/modules/connect/connect_device.dart';
-import 'package:spotube/modules/home/sections/featured.dart';
-import 'package:spotube/modules/home/sections/sections.dart';
-import 'package:spotube/modules/home/sections/new_releases.dart';
-import 'package:spotube/modules/home/sections/recent.dart';
+import 'package:spotube/collections/fake.dart';
+import 'package:spotube/components/image/universal_image.dart';
 import 'package:spotube/components/titlebar/titlebar.dart';
 import 'package:spotube/extensions/constrains.dart';
+import 'package:spotube/models/database/database.dart';
+import 'package:spotube/models/metadata/metadata.dart';
+import 'package:spotube/modules/home/sections/featured.dart';
+import 'package:spotube/modules/home/sections/new_releases.dart';
+import 'package:spotube/modules/home/sections/recent.dart';
+import 'package:spotube/modules/home/sections/sections.dart';
+import 'package:spotube/provider/metadata_plugin/core/user.dart';
 import 'package:spotube/provider/user_preferences/user_preferences_provider.dart';
 import 'package:spotube/utils/platform.dart';
 
@@ -24,115 +25,199 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = useScrollController();
-    final selectedFilter = useState(0);
+    final selectedFilter = useState(_HomeFilter.all);
+
     final mediaQuery = MediaQuery.of(context);
-    final layoutMode =
-        ref.watch(userPreferencesProvider.select((s) => s.layoutMode));
+    final user = ref.watch(metadataPluginUserProvider);
+    final userData = user.asData?.value ?? FakeData.user;
+
+    final layoutMode = ref.watch(
+      userPreferencesProvider.select(
+        (state) => state.layoutMode,
+      ),
+    );
+
+    final compactHeader =
+        mediaQuery.smAndDown || layoutMode == LayoutMode.compact;
 
     return SafeArea(
       bottom: false,
       child: Scaffold(
         headers: [
-          if (kTitlebarVisible) const TitleBar(height: 30),
+          if (kTitlebarVisible)
+            const TitleBar(
+              height: 30,
+            ),
         ],
         child: ColoredBox(
-          color: const Color(0xFF121212),
+          color: const Color(0xFF000000),
           child: CustomScrollView(
             controller: controller,
             slivers: [
-              if (mediaQuery.smAndDown ||
-                  layoutMode == LayoutMode.compact)
+              if (compactHeader)
                 SliverAppBar(
                   pinned: true,
-                  floating: true,
-                  snap: true,
+                  floating: false,
                   elevation: 0,
                   toolbarHeight: 64,
-                  titleSpacing: 16,
-                  backgroundColor: const Color(0xFF121212),
+                  titleSpacing: 12,
+                  backgroundColor: const Color(0xFF000000),
                   foregroundColor: Colors.white,
-                  surfaceTintColor: const Color(0xFF121212),
-                  title: const Row(
-                    mainAxisSize: MainAxisSize.min,
+                  surfaceTintColor: const Color(0xFF000000),
+                  title: Row(
                     children: [
-                      _Sp34TubeIfyBrandMark(),
-                      Gap(10),
-                      Flexible(
-                        child: Text(
-                          'SP34TUBE-IFY',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 20,
-                            fontWeight: FontWeight.w800,
-                            letterSpacing: -0.4,
+                      _HomeProfileAvatar(
+                        imageUrl: userData.images.asUrlString(
+                          index: 1,
+                          placeholder: ImagePlaceholder.artist,
+                        ),
+                        fallbackText: userData.name,
+                        onPressed: () {
+                          context.navigateTo(
+                            const Pt34ProfileRoute(),
+                          );
+                        },
+                      ),
+                      const Gap(8),
+                      Expanded(
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          child: Row(
+                            children: [
+                              _HomeFilterChip(
+                                text: 'Todos',
+                                selected:
+                                    selectedFilter.value == _HomeFilter.all,
+                                onPressed: () {
+                                  selectedFilter.value = _HomeFilter.all;
+                                },
+                              ),
+                              const Gap(8),
+                              _HomeFilterChip(
+                                text: 'Música',
+                                selected:
+                                    selectedFilter.value == _HomeFilter.music,
+                                onPressed: () {
+                                  selectedFilter.value = _HomeFilter.music;
+                                },
+                              ),
+                              const Gap(8),
+                              _HomeFilterChip(
+                                text: 'Pódcasts',
+                                selected:
+                                    selectedFilter.value ==
+                                        _HomeFilter.podcasts,
+                                onPressed: () {
+                                  selectedFilter.value =
+                                      _HomeFilter.podcasts;
+                                },
+                              ),
+                            ],
                           ),
                         ),
                       ),
                     ],
                   ),
-                  actions: [
-                    const ConnectDeviceButton(),
-                    const Gap(4),
-                    IconButton.ghost(
-                      icon: const Icon(
-                        SpotubeIcons.user,
-                        size: 20,
-                        color: Colors.white,
-                      ),
-                      onPressed: () {
-                        context.navigateTo(
-                          const Pt34ProfileRoute(),
-                        );
-                      },
-                    ),
-                    const Gap(2),
-                    IconButton.ghost(
-                      icon: const Icon(
-                        SpotubeIcons.settings,
-                        size: 20,
-                        color: Colors.white,
-                      ),
-                      onPressed: () {
-                        context.navigateTo(
-                          const SettingsRoute(),
-                        );
-                      },
-                    ),
-                    const Gap(8),
-                  ],
                 )
               else if (kIsMacOS)
                 const SliverGap(10),
 
-              SliverPersistentHeader(
-                pinned: true,
-                delegate: _HomeFilterHeaderDelegate(
-                  selectedIndex: selectedFilter.value,
-                  onSelected: (index) {
-                    selectedFilter.value = index;
-                  },
-                ),
-              ),
-
               const SliverGap(8),
 
-              SliverList.builder(
-                itemCount: 3,
-                itemBuilder: (context, index) {
-                  return switch (index) {
-                    // 0 => const HomeGenresSection(),
-                    0 => const HomeRecentlyPlayedSection(),
-                    1 => const HomeFeaturedSection(),
-                    // 3 => const HomePageFriendsSection(),
-                    _ => const HomeNewReleasesSection(),
-                  };
-                },
-              ),
+              if (selectedFilter.value == _HomeFilter.all) ...[
+                const SliverToBoxAdapter(
+                  child: HomeRecentlyPlayedSection(),
+                ),
+                const SliverToBoxAdapter(
+                  child: HomeFeaturedSection(),
+                ),
+                const SliverToBoxAdapter(
+                  child: HomeNewReleasesSection(),
+                ),
+                const SliverSafeArea(
+                  sliver: HomePageBrowseSection(),
+                ),
+              ],
 
-              const SliverSafeArea(
-                sliver: HomePageBrowseSection(),
+              if (selectedFilter.value == _HomeFilter.music) ...[
+                const SliverToBoxAdapter(
+                  child: HomeRecentlyPlayedSection(),
+                ),
+                const SliverToBoxAdapter(
+                  child: HomeFeaturedSection(),
+                ),
+                const SliverToBoxAdapter(
+                  child: HomeNewReleasesSection(),
+                ),
+                const SliverSafeArea(
+                  sliver: HomePageBrowseSection(),
+                ),
+              ],
+
+              if (selectedFilter.value == _HomeFilter.podcasts)
+                const SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: _PodcastsEmptyState(),
+                ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+enum _HomeFilter {
+  all,
+  music,
+  podcasts,
+}
+
+class _HomeProfileAvatar extends StatelessWidget {
+  final String imageUrl;
+  final String fallbackText;
+  final VoidCallback onPressed;
+
+  const _HomeProfileAvatar({
+    required this.imageUrl,
+    required this.fallbackText,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final initial = fallbackText.trim().isEmpty
+        ? 'P'
+        : fallbackText.trim().substring(0, 1).toUpperCase();
+
+    return GestureDetector(
+      onTap: onPressed,
+      behavior: HitTestBehavior.opaque,
+      child: ClipOval(
+        child: SizedBox(
+          width: 40,
+          height: 40,
+          child: Stack(
+            fit: StackFit.expand,
+            children: [
+              Container(
+                alignment: Alignment.center,
+                color: const Color(0xFF535353),
+                child: Text(
+                  initial,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+              UniversalImage(
+                path: imageUrl,
+                width: 40,
+                height: 40,
+                fit: BoxFit.cover,
               ),
             ],
           ),
@@ -142,72 +227,13 @@ class HomePage extends HookConsumerWidget {
   }
 }
 
-class _HomeFilterHeaderDelegate
-    extends SliverPersistentHeaderDelegate {
-  final int selectedIndex;
-  final ValueChanged<int> onSelected;
-
-  const _HomeFilterHeaderDelegate({
-    required this.selectedIndex,
-    required this.onSelected,
-  });
-
-  @override
-  double get minExtent => 60;
-
-  @override
-  double get maxExtent => 60;
-
-  @override
-  Widget build(
-    BuildContext context,
-    double shrinkOffset,
-    bool overlapsContent,
-  ) {
-    return ColoredBox(
-      color: const Color(0xFF121212),
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
-        child: Row(
-          children: [
-            _HomeFilterChip(
-              label: 'Todos',
-              selected: selectedIndex == 0,
-              onPressed: () => onSelected(0),
-            ),
-            const Gap(8),
-            _HomeFilterChip(
-              label: 'Música',
-              selected: selectedIndex == 1,
-              onPressed: () => onSelected(1),
-            ),
-            const Gap(8),
-            _HomeFilterChip(
-              label: 'Pódcasts',
-              selected: selectedIndex == 2,
-              onPressed: () => onSelected(2),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  @override
-  bool shouldRebuild(
-    covariant _HomeFilterHeaderDelegate oldDelegate,
-  ) {
-    return oldDelegate.selectedIndex != selectedIndex;
-  }
-}
-
 class _HomeFilterChip extends StatelessWidget {
-  final String label;
+  final String text;
   final bool selected;
   final VoidCallback onPressed;
 
   const _HomeFilterChip({
-    required this.label,
+    required this.text,
     required this.selected,
     required this.onPressed,
   });
@@ -216,21 +242,25 @@ class _HomeFilterChip extends StatelessWidget {
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onPressed,
+      behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 160),
+        duration: const Duration(
+          milliseconds: 160,
+        ),
         curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(
-          horizontal: 17,
+          horizontal: 16,
           vertical: 9,
         ),
         decoration: BoxDecoration(
           color: selected
               ? const Color(0xFF1ED760)
               : const Color(0xFF2A2A2A),
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(22),
         ),
         child: Text(
-          label,
+          text,
+          maxLines: 1,
           style: TextStyle(
             color: selected ? Colors.black : Colors.white,
             fontSize: 14,
@@ -242,25 +272,40 @@ class _HomeFilterChip extends StatelessWidget {
   }
 }
 
-class _Sp34TubeIfyBrandMark extends StatelessWidget {
-  const _Sp34TubeIfyBrandMark();
+class _PodcastsEmptyState extends StatelessWidget {
+  const _PodcastsEmptyState();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      width: 34,
-      height: 34,
-      alignment: Alignment.center,
-      decoration: const BoxDecoration(
-        color: Color(0xFF1ED760),
-        shape: BoxShape.circle,
-      ),
-      child: const Text(
-        'P',
-        style: TextStyle(
-          color: Colors.black,
-          fontSize: 19,
-          fontWeight: FontWeight.w900,
+    return const Center(
+      child: Padding(
+        padding: EdgeInsets.symmetric(
+          horizontal: 32,
+          vertical: 48,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Pódcasts',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 24,
+                fontWeight: FontWeight.w800,
+              ),
+            ),
+            Gap(8),
+            Text(
+              'No hay pódcasts disponibles en el proveedor conectado.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Color(0xFFB3B3B3),
+                fontSize: 14,
+                height: 1.35,
+              ),
+            ),
+          ],
         ),
       ),
     );
