@@ -2,17 +2,15 @@ import 'package:auto_route/auto_route.dart';
 import 'package:flutter_hooks/flutter_hooks.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
-import 'package:spotube/collections/fake.dart';
-import 'package:spotube/components/image/universal_image.dart';
+import 'package:spotube/collections/routes.gr.dart';
+import 'package:spotube/collections/spotube_icons.dart';
 import 'package:spotube/components/titlebar/titlebar.dart';
 import 'package:spotube/extensions/constrains.dart';
 import 'package:spotube/models/database/database.dart';
-import 'package:spotube/models/metadata/metadata.dart';
 import 'package:spotube/modules/home/sections/featured.dart';
 import 'package:spotube/modules/home/sections/new_releases.dart';
 import 'package:spotube/modules/home/sections/recent.dart';
 import 'package:spotube/modules/home/sections/sections.dart';
-import 'package:spotube/provider/metadata_plugin/core/user.dart';
 import 'package:spotube/provider/user_preferences/user_preferences_provider.dart';
 import 'package:spotube/utils/platform.dart';
 
@@ -25,11 +23,8 @@ class HomePage extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final controller = useScrollController();
-    final selectedFilter = useState(_HomeFilter.all);
-
+    final selectedFilter = useState(0);
     final mediaQuery = MediaQuery.of(context);
-    final user = ref.watch(metadataPluginUserProvider);
-    final userData = user.asData?.value ?? FakeData.user;
 
     final layoutMode = ref.watch(
       userPreferencesProvider.select(
@@ -37,7 +32,7 @@ class HomePage extends HookConsumerWidget {
       ),
     );
 
-    final compactHeader =
+    final showMobileHeader =
         mediaQuery.smAndDown || layoutMode == LayoutMode.compact;
 
     return SafeArea(
@@ -54,11 +49,12 @@ class HomePage extends HookConsumerWidget {
           child: CustomScrollView(
             controller: controller,
             slivers: [
-              if (compactHeader)
+              if (showMobileHeader)
                 SliverAppBar(
                   pinned: true,
                   floating: false,
                   elevation: 0,
+                  scrolledUnderElevation: 0,
                   toolbarHeight: 64,
                   titleSpacing: 12,
                   backgroundColor: const Color(0xFF000000),
@@ -66,12 +62,7 @@ class HomePage extends HookConsumerWidget {
                   surfaceTintColor: const Color(0xFF000000),
                   title: Row(
                     children: [
-                      _HomeProfileAvatar(
-                        imageUrl: userData.images.asUrlString(
-                          index: 1,
-                          placeholder: ImagePlaceholder.artist,
-                        ),
-                        fallbackText: userData.name,
+                      _HomeProfileButton(
                         onPressed: () {
                           context.navigateTo(
                             const Pt34ProfileRoute(),
@@ -86,31 +77,26 @@ class HomePage extends HookConsumerWidget {
                           child: Row(
                             children: [
                               _HomeFilterChip(
-                                text: 'Todos',
-                                selected:
-                                    selectedFilter.value == _HomeFilter.all,
+                                label: 'Todos',
+                                selected: selectedFilter.value == 0,
                                 onPressed: () {
-                                  selectedFilter.value = _HomeFilter.all;
+                                  selectedFilter.value = 0;
                                 },
                               ),
                               const Gap(8),
                               _HomeFilterChip(
-                                text: 'Música',
-                                selected:
-                                    selectedFilter.value == _HomeFilter.music,
+                                label: 'Música',
+                                selected: selectedFilter.value == 1,
                                 onPressed: () {
-                                  selectedFilter.value = _HomeFilter.music;
+                                  selectedFilter.value = 1;
                                 },
                               ),
                               const Gap(8),
                               _HomeFilterChip(
-                                text: 'Pódcasts',
-                                selected:
-                                    selectedFilter.value ==
-                                        _HomeFilter.podcasts,
+                                label: 'Pódcasts',
+                                selected: selectedFilter.value == 2,
                                 onPressed: () {
-                                  selectedFilter.value =
-                                      _HomeFilter.podcasts;
+                                  selectedFilter.value = 2;
                                 },
                               ),
                             ],
@@ -123,43 +109,22 @@ class HomePage extends HookConsumerWidget {
               else if (kIsMacOS)
                 const SliverGap(10),
 
-              const SliverGap(8),
+              const SliverGap(4),
 
-              if (selectedFilter.value == _HomeFilter.all) ...[
-                const SliverToBoxAdapter(
-                  child: HomeRecentlyPlayedSection(),
-                ),
-                const SliverToBoxAdapter(
-                  child: HomeFeaturedSection(),
-                ),
-                const SliverToBoxAdapter(
-                  child: HomeNewReleasesSection(),
-                ),
-                const SliverSafeArea(
-                  sliver: HomePageBrowseSection(),
-                ),
-              ],
+              SliverList.builder(
+                itemCount: 3,
+                itemBuilder: (context, index) {
+                  return switch (index) {
+                    0 => const HomeRecentlyPlayedSection(),
+                    1 => const HomeFeaturedSection(),
+                    _ => const HomeNewReleasesSection(),
+                  };
+                },
+              ),
 
-              if (selectedFilter.value == _HomeFilter.music) ...[
-                const SliverToBoxAdapter(
-                  child: HomeRecentlyPlayedSection(),
-                ),
-                const SliverToBoxAdapter(
-                  child: HomeFeaturedSection(),
-                ),
-                const SliverToBoxAdapter(
-                  child: HomeNewReleasesSection(),
-                ),
-                const SliverSafeArea(
-                  sliver: HomePageBrowseSection(),
-                ),
-              ],
-
-              if (selectedFilter.value == _HomeFilter.podcasts)
-                const SliverFillRemaining(
-                  hasScrollBody: false,
-                  child: _PodcastsEmptyState(),
-                ),
+              const SliverSafeArea(
+                sliver: HomePageBrowseSection(),
+              ),
             ],
           ),
         ),
@@ -168,59 +133,30 @@ class HomePage extends HookConsumerWidget {
   }
 }
 
-enum _HomeFilter {
-  all,
-  music,
-  podcasts,
-}
-
-class _HomeProfileAvatar extends StatelessWidget {
-  final String imageUrl;
-  final String fallbackText;
+class _HomeProfileButton extends StatelessWidget {
   final VoidCallback onPressed;
 
-  const _HomeProfileAvatar({
-    required this.imageUrl,
-    required this.fallbackText,
+  const _HomeProfileButton({
     required this.onPressed,
   });
 
   @override
   Widget build(BuildContext context) {
-    final initial = fallbackText.trim().isEmpty
-        ? 'P'
-        : fallbackText.trim().substring(0, 1).toUpperCase();
-
     return GestureDetector(
       onTap: onPressed,
       behavior: HitTestBehavior.opaque,
-      child: ClipOval(
-        child: SizedBox(
-          width: 40,
-          height: 40,
-          child: Stack(
-            fit: StackFit.expand,
-            children: [
-              Container(
-                alignment: Alignment.center,
-                color: const Color(0xFF535353),
-                child: Text(
-                  initial,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 18,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-              UniversalImage(
-                path: imageUrl,
-                width: 40,
-                height: 40,
-                fit: BoxFit.cover,
-              ),
-            ],
-          ),
+      child: Container(
+        width: 40,
+        height: 40,
+        alignment: Alignment.center,
+        decoration: const BoxDecoration(
+          color: Color(0xFF535353),
+          shape: BoxShape.circle,
+        ),
+        child: const Icon(
+          SpotubeIcons.user,
+          color: Colors.white,
+          size: 21,
         ),
       ),
     );
@@ -228,12 +164,12 @@ class _HomeProfileAvatar extends StatelessWidget {
 }
 
 class _HomeFilterChip extends StatelessWidget {
-  final String text;
+  final String label;
   final bool selected;
   final VoidCallback onPressed;
 
   const _HomeFilterChip({
-    required this.text,
+    required this.label,
     required this.selected,
     required this.onPressed,
   });
@@ -245,7 +181,7 @@ class _HomeFilterChip extends StatelessWidget {
       behavior: HitTestBehavior.opaque,
       child: AnimatedContainer(
         duration: const Duration(
-          milliseconds: 160,
+          milliseconds: 150,
         ),
         curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(
@@ -259,53 +195,13 @@ class _HomeFilterChip extends StatelessWidget {
           borderRadius: BorderRadius.circular(22),
         ),
         child: Text(
-          text,
+          label,
           maxLines: 1,
           style: TextStyle(
             color: selected ? Colors.black : Colors.white,
             fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
-        ),
-      ),
-    );
-  }
-}
-
-class _PodcastsEmptyState extends StatelessWidget {
-  const _PodcastsEmptyState();
-
-  @override
-  Widget build(BuildContext context) {
-    return const Center(
-      child: Padding(
-        padding: EdgeInsets.symmetric(
-          horizontal: 32,
-          vertical: 48,
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(
-              'Pódcasts',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Colors.white,
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-              ),
-            ),
-            Gap(8),
-            Text(
-              'No hay pódcasts disponibles en el proveedor conectado.',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                color: Color(0xFFB3B3B3),
-                fontSize: 14,
-                height: 1.35,
-              ),
-            ),
-          ],
         ),
       ),
     );
