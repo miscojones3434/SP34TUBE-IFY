@@ -36,7 +36,6 @@ class MobileAudioService extends BaseAudioHandler {
             case AudioInterruptionType.duck:
               await audioPlayer.setVolume(0.5);
               break;
-
             case AudioInterruptionType.pause:
             case AudioInterruptionType.unknown:
               wasPausedByBeginEvent = audioPlayer.isPlaying;
@@ -48,13 +47,11 @@ class MobileAudioService extends BaseAudioHandler {
             case AudioInterruptionType.duck:
               await audioPlayer.setVolume(1.0);
               break;
-
             case AudioInterruptionType.pause when wasPausedByBeginEvent:
             case AudioInterruptionType.unknown when wasPausedByBeginEvent:
               await audioPlayer.resume();
               wasPausedByBeginEvent = false;
               break;
-
             default:
               break;
           }
@@ -131,18 +128,6 @@ class MobileAudioService extends BaseAudioHandler {
 
   Future<void> _refreshAndroidAuto() async {
     queue.add(_queueItems());
-
-    await AudioService.notifyChildrenChanged(
-      AudioService.browsableRootId,
-    );
-
-    await AudioService.notifyChildrenChanged(
-      _queueFolderId,
-    );
-
-    await AudioService.notifyChildrenChanged(
-      _nowPlayingFolderId,
-    );
   }
 
   @override
@@ -210,7 +195,6 @@ class MobileAudioService extends BaseAudioHandler {
   @override
   Future<MediaItem?> getMediaItem(String mediaId) async {
     final track = _findTrack(mediaId);
-
     if (track == null) return null;
 
     return _trackToMediaItem(track);
