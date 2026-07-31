@@ -1,13 +1,15 @@
 import 'package:auto_route/auto_route.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
+import 'package:spotube/collections/routes.gr.dart';
 import 'package:spotube/components/titlebar/titlebar.dart';
 
 /// Pantalla propia de canciones y proyectos musicales de SP34TUBE-IFY.
 ///
-/// Esta primera versión crea la estructura visual sin inventar canciones,
-/// archivos, reproducciones ni datos del usuario.
+/// Conecta con las secciones reales de biblioteca, playlists,
+/// canciones guardadas, descargas y archivos locales de Spotube.
 ///
+/// No inventa canciones, archivos ni datos del usuario.
 /// No sustituye ni modifica la biblioteca original de Spotube.
 @RoutePage()
 class Pt34MySongsPage extends HookConsumerWidget {
@@ -36,9 +38,126 @@ class Pt34MySongsPage extends HookConsumerWidget {
                     const Text('Mis canciones').h2(),
                     const Gap(8),
                     const Text(
-                      'Tus canciones y proyectos propios de SP34TUBE-IFY.',
+                      'Accede a tu música real mediante las funciones '
+                      'originales de Spotube.',
                     ).muted(),
                     const Gap(32),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.favorite),
+                            const Gap(12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text(
+                                    'Canciones guardadas y playlists',
+                                  ).h3(),
+                                  const Gap(6),
+                                  const Text(
+                                    'Abre tus canciones favoritas y las '
+                                    'playlists reales de tu cuenta conectada.',
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Gap(12),
+                            Button.outline(
+                              onPressed: () {
+                                context.navigateTo(
+                                  const LibraryRoute(
+                                    children: [
+                                      UserPlaylistsRoute(),
+                                    ],
+                                  ),
+                                );
+                              },
+                              child: const Text('Abrir'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const Gap(16),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.download),
+                            const Gap(12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Canciones descargadas').h3(),
+                                  const Gap(6),
+                                  const Text(
+                                    'Accede a las descargas reales gestionadas '
+                                    'por el sistema original de Spotube.',
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Gap(12),
+                            Button.outline(
+                              onPressed: () {
+                                context.navigateTo(
+                                  const LibraryRoute(
+                                    children: [
+                                      UserDownloadsRoute(),
+                                    ],
+                                  ),
+                                );
+                              },
+                              child: const Text('Abrir'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const Gap(16),
+                    Card(
+                      child: Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Row(
+                          children: [
+                            const Icon(Icons.folder),
+                            const Gap(12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  const Text('Música local').h3(),
+                                  const Gap(6),
+                                  const Text(
+                                    'Abre las canciones reales almacenadas '
+                                    'localmente en tu dispositivo.',
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const Gap(12),
+                            Button.outline(
+                              onPressed: () {
+                                context.navigateTo(
+                                  const LibraryRoute(
+                                    children: [
+                                      UserLocalLibraryRoute(),
+                                    ],
+                                  ),
+                                );
+                              },
+                              child: const Text('Abrir'),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    const Gap(16),
                     Card(
                       child: Padding(
                         padding: const EdgeInsets.all(16),
