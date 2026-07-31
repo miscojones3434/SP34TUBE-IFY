@@ -2,6 +2,7 @@ import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
 import 'package:spotube/collections/fake.dart';
+import 'package:spotube/models/database/database.dart';
 import 'package:spotube/modules/album/album_card.dart';
 import 'package:spotube/modules/playlist/playlist_card.dart';
 import 'package:spotube/provider/history/recent.dart';
