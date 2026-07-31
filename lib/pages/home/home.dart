@@ -22,7 +22,7 @@ class HomePage extends HookConsumerWidget {
   const HomePage({super.key});
 
   @override
-  Widget build(BuildContext context, ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final controller = useScrollController();
     final selectedFilter = useState(0);
     final mediaQuery = MediaQuery.of(context);
@@ -37,105 +37,104 @@ class HomePage extends HookConsumerWidget {
         ],
         child: ColoredBox(
           color: const Color(0xFF121212),
-          child: DefaultTextStyle.merge(
-            style: const TextStyle(
-              color: Colors.white,
-            ),
-            child: CustomScrollView(
-              controller: controller,
-              slivers: [
-                if (mediaQuery.smAndDown ||
-                    layoutMode == LayoutMode.compact)
-                  SliverAppBar(
-                    pinned: true,
-                    floating: true,
-                    snap: true,
-                    elevation: 0,
-                    titleSpacing: 16,
-                    backgroundColor: const Color(0xFF121212),
-                    foregroundColor: Colors.white,
-                    title: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        _Sp34TubeIfyBrandMark(),
-                        Gap(10),
-                        Flexible(
-                          child: Text(
-                            'SP34TUBE-IFY',
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 20,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: -0.4,
-                            ),
+          child: CustomScrollView(
+            controller: controller,
+            slivers: [
+              if (mediaQuery.smAndDown ||
+                  layoutMode == LayoutMode.compact)
+                SliverAppBar(
+                  pinned: true,
+                  floating: true,
+                  snap: true,
+                  elevation: 0,
+                  toolbarHeight: 64,
+                  titleSpacing: 16,
+                  backgroundColor: const Color(0xFF121212),
+                  foregroundColor: Colors.white,
+                  surfaceTintColor: const Color(0xFF121212),
+                  title: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _Sp34TubeIfyBrandMark(),
+                      Gap(10),
+                      Flexible(
+                        child: Text(
+                          'SP34TUBE-IFY',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 20,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.4,
                           ),
                         ),
-                      ],
-                    ),
-                    actions: [
-                      const ConnectDeviceButton(),
-                      const Gap(6),
-                      IconButton.ghost(
-                        icon: const Icon(
-                          SpotubeIcons.user,
-                          size: 20,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {
-                          context.navigateTo(
-                            const Pt34ProfileRoute(),
-                          );
-                        },
                       ),
-                      const Gap(4),
-                      IconButton.ghost(
-                        icon: const Icon(
-                          SpotubeIcons.settings,
-                          size: 20,
-                          color: Colors.white,
-                        ),
-                        onPressed: () {
-                          context.navigateTo(
-                            const SettingsRoute(),
-                          );
-                        },
-                      ),
-                      const Gap(10),
                     ],
-                  )
-                else if (kIsMacOS)
-                  const SliverGap(10),
-
-                SliverToBoxAdapter(
-                  child: _HomeFilterBar(
-                    selectedIndex: selectedFilter.value,
-                    onSelected: (index) {
-                      selectedFilter.value = index;
-                    },
                   ),
-                ),
-
+                  actions: [
+                    const ConnectDeviceButton(),
+                    const Gap(4),
+                    IconButton.ghost(
+                      icon: const Icon(
+                        SpotubeIcons.user,
+                        size: 20,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        context.navigateTo(
+                          const Pt34ProfileRoute(),
+                        );
+                      },
+                    ),
+                    const Gap(2),
+                    IconButton.ghost(
+                      icon: const Icon(
+                        SpotubeIcons.settings,
+                        size: 20,
+                        color: Colors.white,
+                      ),
+                      onPressed: () {
+                        context.navigateTo(
+                          const SettingsRoute(),
+                        );
+                      },
+                    ),
+                    const Gap(8),
+                  ],
+                )
+              else if (kIsMacOS)
                 const SliverGap(10),
 
-                SliverList.builder(
-                  itemCount: 3,
-                  itemBuilder: (context, index) {
-                    return switch (index) {
-                      // 0 => const HomeGenresSection(),
-                      0 => const HomeRecentlyPlayedSection(),
-                      1 => const HomeFeaturedSection(),
-                      // 3 => const HomePageFriendsSection(),
-                      _ => const HomeNewReleasesSection(),
-                    };
+              SliverPersistentHeader(
+                pinned: true,
+                delegate: _HomeFilterHeaderDelegate(
+                  selectedIndex: selectedFilter.value,
+                  onSelected: (index) {
+                    selectedFilter.value = index;
                   },
                 ),
+              ),
 
-                const SliverSafeArea(
-                  sliver: HomePageBrowseSection(),
-                ),
-              ],
-            ),
+              const SliverGap(8),
+
+              SliverList.builder(
+                itemCount: 3,
+                itemBuilder: (context, index) {
+                  return switch (index) {
+                    // 0 => const HomeGenresSection(),
+                    0 => const HomeRecentlyPlayedSection(),
+                    1 => const HomeFeaturedSection(),
+                    // 3 => const HomePageFriendsSection(),
+                    _ => const HomeNewReleasesSection(),
+                  };
+                },
+              ),
+
+              const SliverSafeArea(
+                sliver: HomePageBrowseSection(),
+              ),
+            ],
           ),
         ),
       ),
@@ -143,42 +142,62 @@ class HomePage extends HookConsumerWidget {
   }
 }
 
-class _HomeFilterBar extends StatelessWidget {
+class _HomeFilterHeaderDelegate
+    extends SliverPersistentHeaderDelegate {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
 
-  const _HomeFilterBar({
+  const _HomeFilterHeaderDelegate({
     required this.selectedIndex,
     required this.onSelected,
   });
 
   @override
-  Widget build(BuildContext context) {
-    return Container(
+  double get minExtent => 60;
+
+  @override
+  double get maxExtent => 60;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return ColoredBox(
       color: const Color(0xFF121212),
-      padding: const EdgeInsets.fromLTRB(16, 10, 16, 8),
-      child: Row(
-        children: [
-          _HomeFilterChip(
-            label: 'Todos',
-            selected: selectedIndex == 0,
-            onPressed: () => onSelected(0),
-          ),
-          const Gap(8),
-          _HomeFilterChip(
-            label: 'Música',
-            selected: selectedIndex == 1,
-            onPressed: () => onSelected(1),
-          ),
-          const Gap(8),
-          _HomeFilterChip(
-            label: 'Pódcasts',
-            selected: selectedIndex == 2,
-            onPressed: () => onSelected(2),
-          ),
-        ],
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+        child: Row(
+          children: [
+            _HomeFilterChip(
+              label: 'Todos',
+              selected: selectedIndex == 0,
+              onPressed: () => onSelected(0),
+            ),
+            const Gap(8),
+            _HomeFilterChip(
+              label: 'Música',
+              selected: selectedIndex == 1,
+              onPressed: () => onSelected(1),
+            ),
+            const Gap(8),
+            _HomeFilterChip(
+              label: 'Pódcasts',
+              selected: selectedIndex == 2,
+              onPressed: () => onSelected(2),
+            ),
+          ],
+        ),
       ),
     );
+  }
+
+  @override
+  bool shouldRebuild(
+    covariant _HomeFilterHeaderDelegate oldDelegate,
+  ) {
+    return oldDelegate.selectedIndex != selectedIndex;
   }
 }
 
@@ -199,9 +218,10 @@ class _HomeFilterChip extends StatelessWidget {
       onTap: onPressed,
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 160),
+        curve: Curves.easeOut,
         padding: const EdgeInsets.symmetric(
-          horizontal: 18,
-          vertical: 10,
+          horizontal: 17,
+          vertical: 9,
         ),
         decoration: BoxDecoration(
           color: selected
@@ -213,7 +233,7 @@ class _HomeFilterChip extends StatelessWidget {
           label,
           style: TextStyle(
             color: selected ? Colors.black : Colors.white,
-            fontSize: 15,
+            fontSize: 14,
             fontWeight: FontWeight.w600,
           ),
         ),
@@ -228,8 +248,8 @@ class _Sp34TubeIfyBrandMark extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      width: 32,
-      height: 32,
+      width: 34,
+      height: 34,
       alignment: Alignment.center,
       decoration: const BoxDecoration(
         color: Color(0xFF1ED760),
@@ -239,7 +259,7 @@ class _Sp34TubeIfyBrandMark extends StatelessWidget {
         'P',
         style: TextStyle(
           color: Colors.black,
-          fontSize: 18,
+          fontSize: 19,
           fontWeight: FontWeight.w900,
         ),
       ),
