@@ -20,7 +20,7 @@ class PlayerOverlay extends HookConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final playlist = ref.watch(audioPlayerProvider);
     final canShow = playlist.activeTrack != null;
 
@@ -34,7 +34,9 @@ class PlayerOverlay extends HookConsumerWidget {
       minHeight: canShow ? 63 : 0,
       onPanelSlide: (position) {
         final invertedPosition = 1 - position;
-        ref.read(navigationPanelHeight.notifier).state = 50 * invertedPosition;
+
+        ref.read(navigationPanelHeight.notifier).state =
+            72 * invertedPosition;
       },
       controller: panelController,
       color: Colors.transparent,
@@ -43,7 +45,9 @@ class PlayerOverlay extends HookConsumerWidget {
       header: SizedBox(
         height: 63,
         width: screenSize.width,
-        child: PlayerOverlayCollapsedSection(panelController: panelController),
+        child: PlayerOverlayCollapsedSection(
+          panelController: panelController,
+        ),
       ),
       panelBuilder: (scrollController) => PlayerView(
         panelController: panelController,
