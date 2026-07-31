@@ -29,28 +29,37 @@ class PlayerControls extends HookConsumerWidget {
   static FocusNode focusNode = FocusNode();
 
   @override
-  Widget build(BuildContext context, ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final shortcuts = useMemoized(
-        () => {
-              const SingleActivator(LogicalKeyboardKey.arrowRight):
-                  SeekIntent(ref, true),
-              const SingleActivator(LogicalKeyboardKey.arrowLeft):
-                  SeekIntent(ref, false),
-            },
-        [ref]);
+      () => {
+        const SingleActivator(
+          LogicalKeyboardKey.arrowRight,
+        ): SeekIntent(ref, true),
+        const SingleActivator(
+          LogicalKeyboardKey.arrowLeft,
+        ): SeekIntent(ref, false),
+      },
+      [ref],
+    );
+
     final actions = useMemoized(
-        () => {
-              SeekIntent: SeekAction(),
-            },
-        []);
-    final isFetchingActiveTrack = ref.watch(queryingTrackInfoProvider);
+      () => {
+        SeekIntent: SeekAction(),
+      },
+      [],
+    );
+
+    final isFetchingActiveTrack = ref.watch(
+      queryingTrackInfoProvider,
+    );
 
     final playing =
-        useStream(audioPlayer.playingStream).data ?? audioPlayer.isPlaying;
-    final theme = Theme.of(context);
+        useStream(audioPlayer.playingStream).data ??
+        audioPlayer.isPlaying;
 
-    final buttonSize =
-        kIsMobile ? const ButtonSize(1.5) : const ButtonSize(1.2);
+    final buttonSize = kIsMobile
+        ? const ButtonSize(1.5)
+        : const ButtonSize(1.2);
 
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
@@ -64,7 +73,9 @@ class PlayerControls extends HookConsumerWidget {
         shortcuts: shortcuts,
         actions: actions,
         child: Container(
-          constraints: const BoxConstraints(maxWidth: 600),
+          constraints: const BoxConstraints(
+            maxWidth: 600,
+          ),
           child: Column(
             children: [
               if (!compact)
@@ -76,11 +87,14 @@ class PlayerControls extends HookConsumerWidget {
                       :bufferProgress,
                       :duration,
                       :position,
-                      :progressStatic
+                      :progressStatic,
                     ) = useProgress(ref);
 
                     final progress = useState<num>(
-                      useMemoized(() => progressStatic, []),
+                      useMemoized(
+                        () => progressStatic,
+                        [],
+                      ),
                     );
 
                     useEffect(() {
@@ -92,24 +106,31 @@ class PlayerControls extends HookConsumerWidget {
                       children: [
                         Tooltip(
                           tooltip: TooltipContainer(
-                            child: Text(context.l10n.slide_to_seek),
+                            child: Text(
+                              context.l10n.slide_to_seek,
+                            ),
                           ).call,
                           child: SizedBox(
                             width: mediaQuery.xlAndUp ? 600 : 500,
                             child: Slider(
-                              hintValue: SliderValue.single(bufferProgress),
-                              value:
-                                  SliderValue.single(progress.value.toDouble()),
+                              hintValue: SliderValue.single(
+                                bufferProgress,
+                              ),
+                              value: SliderValue.single(
+                                progress.value.toDouble(),
+                              ),
                               onChanged: isFetchingActiveTrack
                                   ? null
-                                  : (v) {
-                                      progress.value = v.value;
+                                  : (value) {
+                                      progress.value = value.value;
                                     },
                               onChangeEnd: (value) async {
                                 await audioPlayer.seek(
                                   Duration(
-                                    seconds: (value.value * duration.inSeconds)
-                                        .toInt(),
+                                    seconds:
+                                        (value.value *
+                                                duration.inSeconds)
+                                            .toInt(),
                                   ),
                                 );
                               },
@@ -118,18 +139,27 @@ class PlayerControls extends HookConsumerWidget {
                         ),
                         Padding(
                           padding: const EdgeInsets.symmetric(
-                            horizontal: 8.0,
+                            horizontal: 8,
                           ),
                           child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            mainAxisAlignment:
+                                MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
                                 position.toHumanReadableString(),
-                                style: theme.typography.xSmall,
+                                style: const TextStyle(
+                                  color: Color(0xFFB3B3B3),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                               Text(
                                 duration.toHumanReadableString(),
-                                style: theme.typography.xSmall,
+                                style: const TextStyle(
+                                  color: Color(0xFFB3B3B3),
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w500,
+                                ),
                               ),
                             ],
                           ),
@@ -138,50 +168,63 @@ class PlayerControls extends HookConsumerWidget {
                     );
                   },
                 ),
+              const SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Consumer(builder: (context, ref, _) {
-                    final shuffled = ref
-                        .watch(audioPlayerProvider.select((s) => s.shuffled));
-                    return Tooltip(
-                      tooltip: TooltipContainer(
-                        child: Text(
-                          shuffled
-                              ? context.l10n.unshuffle_playlist
-                              : context.l10n.shuffle_playlist,
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final shuffled = ref.watch(
+                        audioPlayerProvider.select(
+                          (state) => state.shuffled,
                         ),
-                      ).call,
-                      child: IconButton(
-                        size: buttonSize,
-                        icon: Icon(
-                          SpotubeIcons.shuffle,
-                          color: shuffled ? theme.colorScheme.primary : null,
-                          size: 22,
+                      );
+
+                      return Tooltip(
+                        tooltip: TooltipContainer(
+                          child: Text(
+                            shuffled
+                                ? context.l10n.unshuffle_playlist
+                                : context.l10n.shuffle_playlist,
+                          ),
+                        ).call,
+                        child: IconButton(
+                          size: buttonSize,
+                          icon: Icon(
+                            SpotubeIcons.shuffle,
+                            color: shuffled
+                                ? const Color(0xFF1ED760)
+                                : Colors.white,
+                            size: 22,
+                          ),
+                          variance: shuffled
+                              ? ButtonVariance.secondary
+                              : ButtonVariance.ghost,
+                          onPressed: isFetchingActiveTrack
+                              ? null
+                              : () {
+                                  audioPlayer.setShuffle(
+                                    !shuffled,
+                                  );
+                                },
                         ),
-                        variance: shuffled
-                            ? ButtonVariance.secondary
-                            : ButtonVariance.ghost,
-                        onPressed: isFetchingActiveTrack
-                            ? null
-                            : () {
-                                if (shuffled) {
-                                  audioPlayer.setShuffle(false);
-                                } else {
-                                  audioPlayer.setShuffle(true);
-                                }
-                              },
-                      ),
-                    );
-                  }),
+                      );
+                    },
+                  ),
                   Tooltip(
                     tooltip: TooltipContainer(
-                      child: Text(context.l10n.previous_track),
+                      child: Text(
+                        context.l10n.previous_track,
+                      ),
                     ).call,
                     child: IconButton.ghost(
                       size: buttonSize,
                       enabled: !isFetchingActiveTrack,
-                      icon: const Icon(SpotubeIcons.skipBack),
+                      icon: const Icon(
+                        SpotubeIcons.skipBack,
+                        color: Colors.white,
+                        size: 27,
+                      ),
                       onPressed: audioPlayer.skipToPrevious,
                     ),
                   ),
@@ -200,10 +243,17 @@ class PlayerControls extends HookConsumerWidget {
                           ? const SizedBox(
                               height: 20,
                               width: 20,
-                              child: CircularProgressIndicator(),
+                              child: CircularProgressIndicator(
+                                color: Color(0xFF1ED760),
+                                strokeWidth: 2,
+                              ),
                             )
                           : Icon(
-                              playing ? SpotubeIcons.pause : SpotubeIcons.play,
+                              playing
+                                  ? SpotubeIcons.pause
+                                  : SpotubeIcons.play,
+                              color: Colors.black,
+                              size: 28,
                             ),
                       onPressed: isFetchingActiveTrack
                           ? null
@@ -214,61 +264,81 @@ class PlayerControls extends HookConsumerWidget {
                     ),
                   ),
                   Tooltip(
-                    tooltip:
-                        TooltipContainer(child: Text(context.l10n.next_track))
-                            .call,
+                    tooltip: TooltipContainer(
+                      child: Text(
+                        context.l10n.next_track,
+                      ),
+                    ).call,
                     child: IconButton.ghost(
                       size: buttonSize,
-                      icon: const Icon(SpotubeIcons.skipForward),
-                      onPressed:
-                          isFetchingActiveTrack ? null : audioPlayer.skipToNext,
+                      icon: const Icon(
+                        SpotubeIcons.skipForward,
+                        color: Colors.white,
+                        size: 27,
+                      ),
+                      onPressed: isFetchingActiveTrack
+                          ? null
+                          : audioPlayer.skipToNext,
                     ),
                   ),
-                  Consumer(builder: (context, ref, _) {
-                    final loopMode = ref
-                        .watch(audioPlayerProvider.select((s) => s.loopMode));
+                  Consumer(
+                    builder: (context, ref, _) {
+                      final loopMode = ref.watch(
+                        audioPlayerProvider.select(
+                          (state) => state.loopMode,
+                        ),
+                      );
 
-                    return Tooltip(
-                      tooltip: TooltipContainer(
-                        child: Text(
-                          loopMode == PlaylistMode.single
-                              ? context.l10n.loop_track
-                              : loopMode == PlaylistMode.loop
-                                  ? context.l10n.repeat_playlist
-                                  : "",
+                      final loopEnabled =
+                          loopMode != PlaylistMode.none;
+
+                      return Tooltip(
+                        tooltip: TooltipContainer(
+                          child: Text(
+                            loopMode == PlaylistMode.single
+                                ? context.l10n.loop_track
+                                : loopMode == PlaylistMode.loop
+                                    ? context
+                                        .l10n
+                                        .repeat_playlist
+                                    : '',
+                          ),
+                        ).call,
+                        child: IconButton(
+                          size: buttonSize,
+                          icon: Icon(
+                            loopMode == PlaylistMode.single
+                                ? SpotubeIcons.repeatOne
+                                : SpotubeIcons.repeat,
+                            color: loopEnabled
+                                ? const Color(0xFF1ED760)
+                                : Colors.white,
+                            size: 22,
+                          ),
+                          variance: loopEnabled
+                              ? ButtonVariance.secondary
+                              : ButtonVariance.ghost,
+                          onPressed: isFetchingActiveTrack
+                              ? null
+                              : () async {
+                                  await audioPlayer.setLoopMode(
+                                    switch (loopMode) {
+                                      PlaylistMode.loop =>
+                                        PlaylistMode.single,
+                                      PlaylistMode.single =>
+                                        PlaylistMode.none,
+                                      PlaylistMode.none =>
+                                        PlaylistMode.loop,
+                                    },
+                                  );
+                                },
                         ),
-                      ).call,
-                      child: IconButton(
-                        size: buttonSize,
-                        icon: Icon(
-                          loopMode == PlaylistMode.single
-                              ? SpotubeIcons.repeatOne
-                              : SpotubeIcons.repeat,
-                          color: loopMode != PlaylistMode.none
-                              ? theme.colorScheme.primary
-                              : null,
-                        ),
-                        variance: loopMode == PlaylistMode.single ||
-                                loopMode == PlaylistMode.loop
-                            ? ButtonVariance.secondary
-                            : ButtonVariance.ghost,
-                        onPressed: isFetchingActiveTrack
-                            ? null
-                            : () async {
-                                await audioPlayer.setLoopMode(
-                                  switch (loopMode) {
-                                    PlaylistMode.loop => PlaylistMode.single,
-                                    PlaylistMode.single => PlaylistMode.none,
-                                    PlaylistMode.none => PlaylistMode.loop,
-                                  },
-                                );
-                              },
-                      ),
-                    );
-                  }),
+                      );
+                    },
+                  ),
                 ],
               ),
-              const SizedBox(height: 5)
+              const SizedBox(height: 8),
             ],
           ),
         ),
