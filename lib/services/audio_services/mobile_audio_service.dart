@@ -52,6 +52,7 @@ class MobileAudioService extends BaseAudioHandler {
               await audioPlayer.resume();
               wasPausedByBeginEvent = false;
               break;
+
             default:
               break;
           }
