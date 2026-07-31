@@ -54,8 +54,8 @@ class Pt34HomePage extends HookConsumerWidget {
                                   const Text('Mi actividad').h3(),
                                   const Gap(6),
                                   const Text(
-                                    'Consulta tu actividad musical y el progreso '
-                                    'de tus funciones PT34.',
+                                    'Consulta tu actividad musical y las '
+                                    'estadísticas reales registradas por Spotube.',
                                   ),
                                 ],
                               ),
@@ -88,8 +88,8 @@ class Pt34HomePage extends HookConsumerWidget {
                                   const Text('Mis canciones').h3(),
                                   const Gap(6),
                                   const Text(
-                                    'Accede a tus canciones y proyectos '
-                                    'musicales propios de PT34.',
+                                    'Accede a tus playlists, descargas y '
+                                    'canciones locales reales.',
                                   ),
                                 ],
                               ),
@@ -148,11 +148,11 @@ class Pt34HomePage extends HookConsumerWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('Próximas secciones').h3(),
+                            const Text('Estado de integración').h3(),
                             const Gap(8),
                             const Text(
-                              'Creación musical con IA, distribución musical '
-                              'y perfil PT34.',
+                              'Inicio, actividad, canciones y perfil PT34 '
+                              'están conectados con funciones reales de Spotube.',
                             ),
                           ],
                         ),
