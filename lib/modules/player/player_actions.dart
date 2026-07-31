@@ -36,39 +36,61 @@ class PlayerActions extends HookConsumerWidget {
   });
 
   @override
-  Widget build(BuildContext context, ref) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final playlist = ref.watch(audioPlayerProvider);
-    final isLocalTrack = playlist.activeTrack is SpotubeLocalTrackObject;
+    final isLocalTrack =
+        playlist.activeTrack is SpotubeLocalTrackObject;
+
     ref.watch(downloadManagerProvider);
-    final downloader = ref.watch(downloadManagerProvider.notifier);
-    final isInQueue = useMemoized(() {
-      if (playlist.activeTrack is! SpotubeFullTrackObject) return false;
-      final downloadTask =
-          downloader.getTaskByTrackId(playlist.activeTrack!.id);
-      return const [
-        DownloadStatus.queued,
-        DownloadStatus.downloading,
-      ].contains(downloadTask?.status);
-    }, [
-      playlist.activeTrack,
-      downloader,
-    ]);
+
+    final downloader =
+        ref.watch(downloadManagerProvider.notifier);
+
+    final isInQueue = useMemoized(
+      () {
+        if (playlist.activeTrack is! SpotubeFullTrackObject) {
+          return false;
+        }
+
+        final downloadTask = downloader.getTaskByTrackId(
+          playlist.activeTrack!.id,
+        );
+
+        return const [
+          DownloadStatus.queued,
+          DownloadStatus.downloading,
+        ].contains(downloadTask?.status);
+      },
+      [
+        playlist.activeTrack,
+        downloader,
+      ],
+    );
 
     final localTracks = ref.watch(localTracksProvider).value;
-    final authenticated = ref.watch(metadataPluginAuthenticatedProvider);
+    final authenticated =
+        ref.watch(metadataPluginAuthenticatedProvider);
     final sleepTimer = ref.watch(sleepTimerProvider);
-    final sleepTimerNotifier = ref.watch(sleepTimerProvider.notifier);
+    final sleepTimerNotifier =
+        ref.watch(sleepTimerProvider.notifier);
 
-    final isDownloaded = useMemoized(() {
-      return localTracks?.values.expand((e) => e).any(
-                (element) =>
-                    element.name == playlist.activeTrack?.name &&
-                    element.album.name == playlist.activeTrack?.album.name &&
-                    element.artists.asString() ==
-                        playlist.activeTrack?.artists.asString(),
-              ) ==
-          true;
-    }, [localTracks, playlist.activeTrack]);
+    final isDownloaded = useMemoized(
+      () {
+        return localTracks?.values.expand((tracks) => tracks).any(
+                  (track) =>
+                      track.name == playlist.activeTrack?.name &&
+                      track.album.name ==
+                          playlist.activeTrack?.album.name &&
+                      track.artists.asString() ==
+                          playlist.activeTrack?.artists.asString(),
+                ) ==
+            true;
+      },
+      [
+        localTracks,
+        playlist.activeTrack,
+      ],
+    );
 
     final sleepTimerEntries = useMemoized(
       () => {
@@ -80,16 +102,24 @@ class PlayerActions extends HookConsumerWidget {
       [context.l10n],
     );
 
-    var customHoursEnabled =
-        sleepTimer == null || sleepTimerEntries.values.contains(sleepTimer);
+    final customHoursEnabled =
+        sleepTimer == null ||
+        sleepTimerEntries.values.contains(sleepTimer);
+
     return Row(
       mainAxisAlignment: mainAxisAlignment,
       children: [
         if (showQueue)
           Tooltip(
-            tooltip: TooltipContainer(child: Text(context.l10n.queue)).call,
+            tooltip: TooltipContainer(
+              child: Text(context.l10n.queue),
+            ).call,
             child: IconButton.ghost(
-              icon: const Icon(SpotubeIcons.queue),
+              icon: const Icon(
+                SpotubeIcons.queue,
+                color: Colors.white,
+                size: 22,
+              ),
               enabled: playlist.activeTrack != null,
               onPressed: () {
                 openDrawer(
@@ -101,14 +131,18 @@ class PlayerActions extends HookConsumerWidget {
                   surfaceOpacity: 0.7,
                   builder: (context) {
                     return Container(
-                      constraints: const BoxConstraints(maxWidth: 800),
+                      constraints: const BoxConstraints(
+                        maxWidth: 800,
+                      ),
                       child: Consumer(
                         builder: (context, ref, _) {
-                          final playlist = ref.watch(audioPlayerProvider);
+                          final playlist =
+                              ref.watch(audioPlayerProvider);
                           final playlistNotifier =
                               ref.read(audioPlayerProvider.notifier);
 
-                          return PlayerQueue.fromAudioPlayerNotifier(
+                          return PlayerQueue
+                              .fromAudioPlayerNotifier(
                             floating: true,
                             playlist: playlist,
                             notifier: playlistNotifier,
@@ -124,13 +158,21 @@ class PlayerActions extends HookConsumerWidget {
         if (!isLocalTrack)
           Tooltip(
             tooltip: TooltipContainer(
-              child: Text(context.l10n.alternative_track_sources),
+              child: Text(
+                context.l10n.alternative_track_sources,
+              ),
             ).call,
             child: IconButton.ghost(
               enabled: playlist.activeTrack != null,
-              icon: const Icon(SpotubeIcons.alternativeRoute),
+              icon: const Icon(
+                SpotubeIcons.alternativeRoute,
+                color: Colors.white,
+                size: 22,
+              ),
               onPressed: () {
-                final screenSize = MediaQuery.sizeOf(context);
+                final screenSize =
+                    MediaQuery.sizeOf(context);
+
                 if (screenSize.mdAndUp) {
                   showPopover(
                     alignment: Alignment.bottomCenter,
@@ -143,13 +185,17 @@ class PlayerActions extends HookConsumerWidget {
                             maxHeight: 600,
                             maxWidth: 500,
                           ),
-                          child: SiblingTracksSheet(floating: floatingQueue),
+                          child: SiblingTracksSheet(
+                            floating: floatingQueue,
+                          ),
                         ),
                       );
                     },
                   );
                 } else {
-                  context.pushRoute(const PlayerTrackSourcesRoute());
+                  context.pushRoute(
+                    const PlayerTrackSourcesRoute(),
+                  );
                 }
               },
             ),
@@ -160,37 +206,58 @@ class PlayerActions extends HookConsumerWidget {
               height: 20,
               width: 20,
               child: CircularProgressIndicator(
-                size: 2,
+                color: Color(0xFF1ED760),
+                strokeWidth: 2,
               ),
             )
           else
             Tooltip(
-              tooltip:
-                  TooltipContainer(child: Text(context.l10n.download_track))
-                      .call,
+              tooltip: TooltipContainer(
+                child: Text(
+                  context.l10n.download_track,
+                ),
+              ).call,
               child: IconButton.ghost(
                 icon: Icon(
-                  isDownloaded ? SpotubeIcons.done : SpotubeIcons.download,
+                  isDownloaded
+                      ? SpotubeIcons.done
+                      : SpotubeIcons.download,
+                  color: isDownloaded
+                      ? const Color(0xFF1ED760)
+                      : Colors.white,
+                  size: 22,
                 ),
                 onPressed: playlist.activeTrack != null
-                    ? () => downloader.addToQueue(
-                        playlist.activeTrack! as SpotubeFullTrackObject)
+                    ? () {
+                        downloader.addToQueue(
+                          playlist.activeTrack!
+                              as SpotubeFullTrackObject,
+                        );
+                      }
                     : null,
               ),
             ),
         if (playlist.activeTrack != null &&
             !isLocalTrack &&
             authenticated.asData?.value == true)
-          TrackHeartButton(track: playlist.activeTrack!),
+          TrackHeartButton(
+            track: playlist.activeTrack!,
+          ),
         AdaptivePopSheetList<Duration>(
           tooltip: context.l10n.sleep_timer,
-          offset: Offset(0, -50 * (sleepTimerEntries.values.length + 2)),
+          offset: Offset(
+            0,
+            -50 * (sleepTimerEntries.values.length + 2),
+          ),
           headings: [
             Text(context.l10n.sleep_timer),
           ],
           icon: Icon(
             SpotubeIcons.timer,
-            color: sleepTimer != null ? Colors.red : null,
+            color: sleepTimer != null
+                ? const Color(0xFF1ED760)
+                : Colors.white,
+            size: 22,
           ),
           onSelected: (value) {
             if (value == Duration.zero) {
@@ -210,45 +277,66 @@ class PlayerActions extends HookConsumerWidget {
               enabled: customHoursEnabled,
               onPressed: (context) async {
                 final currentTime = TimeOfDay.now();
+
                 final time = await showDialog<TimeOfDay?>(
                   context: context,
-                  builder: (context) => HookBuilder(builder: (context) {
-                    final timeRef = useRef<TimeOfDay?>(null);
-                    return AlertDialog(
-                      trailing: IconButton.ghost(
-                        size: ButtonSize.xSmall,
-                        icon: const Icon(SpotubeIcons.close),
-                        onPressed: () {
-                          Navigator.of(context).pop();
-                        },
-                      ),
-                      title: Text(
-                        ShadcnLocalizations.of(context).placeholderTimePicker,
-                      ),
-                      content: TimePickerDialog(
-                        use24HourFormat: false,
-                        initialValue: TimeOfDay.fromDateTime(
-                          DateTime.now().add(sleepTimer ?? Duration.zero),
-                        ),
-                        onChanged: (value) => timeRef.value = value,
-                      ),
-                      actions: [
-                        Button.primary(
+                  builder: (context) => HookBuilder(
+                    builder: (context) {
+                      final timeRef =
+                          useRef<TimeOfDay?>(null);
+
+                      return AlertDialog(
+                        trailing: IconButton.ghost(
+                          size: ButtonSize.xSmall,
+                          icon: const Icon(
+                            SpotubeIcons.close,
+                          ),
                           onPressed: () {
-                            Navigator.of(context).pop(timeRef.value);
+                            Navigator.of(context).pop();
                           },
-                          child: Text(context.l10n.save),
                         ),
-                      ],
-                    );
-                  }),
+                        title: Text(
+                          ShadcnLocalizations.of(context)
+                              .placeholderTimePicker,
+                        ),
+                        content: TimePickerDialog(
+                          use24HourFormat: false,
+                          initialValue:
+                              TimeOfDay.fromDateTime(
+                            DateTime.now().add(
+                              sleepTimer ?? Duration.zero,
+                            ),
+                          ),
+                          onChanged: (value) {
+                            timeRef.value = value;
+                          },
+                        ),
+                        actions: [
+                          Button.primary(
+                            onPressed: () {
+                              Navigator.of(context).pop(
+                                timeRef.value,
+                              );
+                            },
+                            child: Text(
+                              context.l10n.save,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 );
 
                 if (time != null) {
                   sleepTimerNotifier.setSleepTimer(
                     Duration(
-                      hours: (time.hour - currentTime.hour).abs(),
-                      minutes: (time.minute - currentTime.minute).abs(),
+                      hours:
+                          (time.hour - currentTime.hour)
+                              .abs(),
+                      minutes:
+                          (time.minute - currentTime.minute)
+                              .abs(),
                     ),
                   );
                 }
@@ -256,20 +344,27 @@ class PlayerActions extends HookConsumerWidget {
               child: Text(
                 customHoursEnabled
                     ? context.l10n.custom_hours
-                    : sleepTimer.format(abbreviated: true),
+                    : sleepTimer.format(
+                        abbreviated: true,
+                      ),
               ),
             ),
             AdaptiveMenuButton(
               value: Duration.zero,
-              enabled: sleepTimer != Duration.zero && sleepTimer != null,
+              enabled:
+                  sleepTimer != Duration.zero &&
+                  sleepTimer != null,
               child: Text(
                 context.l10n.cancel,
-                style: const TextStyle(color: Colors.green),
+                style: const TextStyle(
+                  color: Color(0xFF1ED760),
+                  fontWeight: FontWeight.w600,
+                ),
               ),
             ),
           ],
         ),
-        ...(extraActions ?? [])
+        ...(extraActions ?? []),
       ],
     );
   }
