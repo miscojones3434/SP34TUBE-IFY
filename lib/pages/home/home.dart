@@ -62,7 +62,8 @@ class HomePage extends HookConsumerWidget {
                   surfaceTintColor: const Color(0xFF000000),
                   title: Row(
                     children: [
-                      _HomeProfileButton(
+                      _HomeCircleButton(
+                        icon: SpotubeIcons.user,
                         onPressed: () {
                           context.navigateTo(
                             const Pt34ProfileRoute(),
@@ -103,6 +104,15 @@ class HomePage extends HookConsumerWidget {
                           ),
                         ),
                       ),
+                      const Gap(8),
+                      _HomeCircleButton(
+                        icon: SpotubeIcons.settings,
+                        onPressed: () {
+                          context.navigateTo(
+                            const SettingsRoute(),
+                          );
+                        },
+                      ),
                     ],
                   ),
                 )
@@ -133,10 +143,12 @@ class HomePage extends HookConsumerWidget {
   }
 }
 
-class _HomeProfileButton extends StatelessWidget {
+class _HomeCircleButton extends StatelessWidget {
+  final IconData icon;
   final VoidCallback onPressed;
 
-  const _HomeProfileButton({
+  const _HomeCircleButton({
+    required this.icon,
     required this.onPressed,
   });
 
@@ -153,8 +165,8 @@ class _HomeProfileButton extends StatelessWidget {
           color: Color(0xFF535353),
           shape: BoxShape.circle,
         ),
-        child: const Icon(
-          SpotubeIcons.user,
+        child: Icon(
+          icon,
           color: Colors.white,
           size: 21,
         ),
