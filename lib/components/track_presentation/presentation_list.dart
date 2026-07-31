@@ -23,12 +23,15 @@ class PresentationListSection extends HookConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final options = TrackPresentationOptions.of(context);
     final playlist = ref.watch(audioPlayerProvider);
+
     final state = ref.watch(
       presentationStateProvider(options.collection),
     );
+
     final notifier = ref.read(
       presentationStateProvider(options.collection).notifier,
     );
+
     final isUserPlaylist = useIsUserPlaylist(
       ref,
       options.collectionId,
@@ -149,7 +152,8 @@ class PresentationListSection extends HookConsumerWidget {
 
             final isSelected = useMemoized(
               () => state.selectedTracks.any(
-                (selectedTrack) => selectedTrack.id == track.id,
+                (selectedTrack) =>
+                    selectedTrack.id == track.id,
               ),
               [
                 track.id,
@@ -166,8 +170,8 @@ class PresentationListSection extends HookConsumerWidget {
                 playlist: playlist,
                 track: track,
                 selected: isSelected,
-                onTap: () {
-                  onTileTap(track, index);
+                onTap: () async {
+                  await onTileTap(track, index);
                 },
                 onChanged: state.selectedTracks.isEmpty
                     ? null
