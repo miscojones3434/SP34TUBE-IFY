@@ -33,7 +33,7 @@ def composeVersion = "1.4.8"
 
 android {
     namespace "oss.krtirtho.spotube"
-    
+
     compileSdkVersion 36
 
     ndkVersion = "29.0.14206865"
@@ -57,11 +57,11 @@ android {
     }
 
     composeOptions {
-        kotlinCompilerExtensionVersion "$composeVersion" // Correlates with org.jetbrains.kotlin.android plugin in settings.gradle
+        kotlinCompilerExtensionVersion "$composeVersion"
     }
 
     defaultConfig {
-        applicationId "oss.krtirtho.spotube"
+        applicationId "com.pt34.sp34tubeify"
         minSdkVersion 24
         targetSdkVersion 35
         versionCode flutterVersionCode.toInteger()
@@ -73,7 +73,9 @@ android {
         release {
             keyAlias keystoreProperties['keyAlias']
             keyPassword keystoreProperties['keyPassword']
-            storeFile keystoreProperties['storeFile'] ? file(keystoreProperties['storeFile']) : null
+            storeFile keystoreProperties['storeFile']
+                ? file(keystoreProperties['storeFile'])
+                : null
             storePassword keystoreProperties['storePassword']
         }
     }
@@ -82,6 +84,7 @@ android {
         release {
             signingConfig signingConfigs.release
         }
+
         debug {
             signingConfig signingConfigs.release
         }
@@ -92,21 +95,23 @@ android {
     productFlavors {
         nightly {
             dimension "default"
-            resValue "string", "app_name_en", "Spotube Nightly"
+            resValue "string", "app_name_en", "SP34TUBE-IFY Nightly"
             applicationIdSuffix ".nightly"
             versionNameSuffix "-nightly"
             signingConfig signingConfigs.release
         }
+
         dev {
             dimension "default"
-            resValue "string", "app_name_en", "Spotube Dev"
+            resValue "string", "app_name_en", "SP34TUBE-IFY Dev"
             applicationIdSuffix ".dev"
             versionNameSuffix "-dev"
             signingConfig signingConfigs.release
         }
+
         stable {
             dimension "default"
-            resValue "string", "app_name_en", "Spotube"
+            resValue "string", "app_name_en", "SP34TUBE-IFY"
             signingConfig signingConfigs.release
         }
     }
@@ -121,20 +126,18 @@ flutter {
 }
 
 def glanceVersion = "1.1.1"
+
 dependencies {
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.1.4'
 
     implementation 'androidx.lifecycle:lifecycle-viewmodel-ktx:2.5.1'
-    // other deps so just ignore
     implementation 'com.android.support:multidex:2.0.1'
-
     implementation "androidx.glance:glance-appwidget:$glanceVersion"
     implementation "androidx.glance:glance-appwidget-preview:$glanceVersion"
     implementation "androidx.glance:glance-preview:$glanceVersion"
     implementation "androidx.glance:glance-material3:$glanceVersion"
     implementation "androidx.glance:glance-material:$glanceVersion"
     implementation "androidx.work:work-runtime-ktx:2.8.1"
-
     implementation "org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3"
     implementation 'com.google.code.gson:gson:2.11.0'
 }
