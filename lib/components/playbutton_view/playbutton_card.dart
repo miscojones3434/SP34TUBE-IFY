@@ -37,7 +37,9 @@ class PlaybuttonCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final unescapeHtml = description?.unescapeHtml().cleanHtml() ?? "";
+    final cleanDescription =
+        description?.unescapeHtml().cleanHtml() ?? "";
+
     final scale = context.theme.scaling;
 
     return SizedBox(
@@ -50,7 +52,7 @@ class PlaybuttonCard extends StatelessWidget {
                 width: 150 * scale,
                 height: 150 * scale,
                 decoration: BoxDecoration(
-                  borderRadius: context.theme.borderRadiusMd,
+                  borderRadius: BorderRadius.circular(6 * scale),
                   image: DecorationImage(
                     image: UniversalImage.imageProvider(
                       imageUrl!,
@@ -59,6 +61,13 @@ class PlaybuttonCard extends StatelessWidget {
                     ),
                     fit: BoxFit.cover,
                   ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withAlpha(90),
+                      blurRadius: 8,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
               )
             else
@@ -66,12 +75,22 @@ class PlaybuttonCard extends StatelessWidget {
                 width: 150 * scale,
                 height: 150 * scale,
                 child: ClipRRect(
-                  borderRadius: context.theme.borderRadiusMd,
+                  borderRadius: BorderRadius.circular(6 * scale),
                   child: image!,
                 ),
               ),
+
             StatedWidget.builder(
               builder: (context, states) {
+                final hovered =
+                    states.contains(WidgetState.hovered);
+
+                final showQueue =
+                    (hovered || kIsMobile) && !isLoading;
+
+                final showPlayback =
+                    hovered || kIsMobile || isPlaying || isLoading;
+
                 return Positioned(
                   right: 8,
                   bottom: 8,
@@ -79,55 +98,59 @@ class PlaybuttonCard extends StatelessWidget {
                     children: [
                       AnimatedScale(
                         curve: Curves.easeOutBack,
-                        duration: const Duration(milliseconds: 300),
-                        scale: (states.contains(WidgetState.hovered) ||
-                                    kIsMobile) &&
-                                !isLoading
-                            ? 1
-                            : 0.7,
+                        duration: const Duration(
+                          milliseconds: 220,
+                        ),
+                        scale: showQueue ? 1 : 0.75,
                         child: AnimatedOpacity(
-                          duration: const Duration(milliseconds: 300),
-                          opacity: (states.contains(WidgetState.hovered) ||
-                                      kIsMobile) &&
-                                  !isLoading
-                              ? 1
-                              : 0,
-                          child: IconButton.secondary(
-                            icon: const Icon(SpotubeIcons.queueAdd),
-                            onPressed: onAddToQueuePressed,
-                            size: ButtonSize.small,
+                          duration: const Duration(
+                            milliseconds: 180,
+                          ),
+                          opacity: showQueue ? 1 : 0,
+                          child: IgnorePointer(
+                            ignoring: !showQueue,
+                            child: IconButton.secondary(
+                              icon: const Icon(
+                                SpotubeIcons.queueAdd,
+                              ),
+                              onPressed: onAddToQueuePressed,
+                              size: ButtonSize.small,
+                            ),
                           ),
                         ),
                       ),
                       const Gap(5),
                       AnimatedScale(
                         curve: Curves.easeOutBack,
-                        duration: const Duration(milliseconds: 150),
-                        scale: states.contains(WidgetState.hovered) ||
-                                kIsMobile ||
-                                isPlaying ||
-                                isLoading
-                            ? 1
-                            : 0.7,
+                        duration: const Duration(
+                          milliseconds: 180,
+                        ),
+                        scale: showPlayback ? 1 : 0.75,
                         child: AnimatedOpacity(
-                          duration: const Duration(milliseconds: 150),
-                          opacity: states.contains(WidgetState.hovered) ||
-                                  kIsMobile ||
-                                  isPlaying ||
-                                  isLoading
-                              ? 1
-                              : 0,
-                          child: IconButton.secondary(
-                            icon: switch ((isLoading, isPlaying)) {
-                              (true, _) => const CircularProgressIndicator(
-                                  size: 15,
-                                ),
-                              (false, false) => const Icon(SpotubeIcons.play),
-                              (false, true) => const Icon(SpotubeIcons.pause)
-                            },
-                            enabled: !isLoading,
-                            onPressed: onPlaybuttonPressed,
-                            size: ButtonSize.small,
+                          duration: const Duration(
+                            milliseconds: 160,
+                          ),
+                          opacity: showPlayback ? 1 : 0,
+                          child: IgnorePointer(
+                            ignoring: !showPlayback,
+                            child: IconButton.secondary(
+                              icon: switch (
+                                  (isLoading, isPlaying)) {
+                                (true, _) =>
+                                  const CircularProgressIndicator(
+                                    size: 15,
+                                  ),
+                                (false, false) => const Icon(
+                                    SpotubeIcons.play,
+                                  ),
+                                (false, true) => const Icon(
+                                    SpotubeIcons.pause,
+                                  ),
+                              },
+                              enabled: !isLoading,
+                              onPressed: onPlaybuttonPressed,
+                              size: ButtonSize.small,
+                            ),
                           ),
                         ),
                       ),
@@ -136,6 +159,7 @@ class PlaybuttonCard extends StatelessWidget {
                 );
               },
             ),
+
             if (isOwner)
               const Positioned(
                 right: 5,
@@ -145,23 +169,41 @@ class PlaybuttonCard extends StatelessWidget {
                     shape: ButtonShape.circle,
                     size: ButtonSize.small,
                   ),
-                  child: Icon(SpotubeIcons.user),
+                  child: Icon(
+                    SpotubeIcons.user,
+                  ),
                 ),
               ),
           ],
         ),
         title: Tooltip(
-          tooltip: TooltipContainer(child: Text(title)).call,
+          tooltip: TooltipContainer(
+            child: Text(title),
+          ).call,
           child: Text(
             title,
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+              color: Colors.white,
+              fontSize: 14,
+              fontWeight: FontWeight.w700,
+              height: 1.2,
+            ),
           ),
         ),
         subtitle: Text(
-          unescapeHtml.isEmpty ? "\n" : unescapeHtml,
+          cleanDescription.isEmpty
+              ? "\n"
+              : cleanDescription,
           maxLines: 2,
           overflow: TextOverflow.ellipsis,
+          style: const TextStyle(
+            color: Color(0xFFB3B3B3),
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            height: 1.3,
+          ),
         ),
         onPressed: onTap,
       ),
