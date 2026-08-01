@@ -41,79 +41,152 @@ class HorizontalPlaybuttonCardView<T> extends HookWidget {
   @override
   Widget build(BuildContext context) {
     final scrollController = useScrollController();
-    final isArtist = items.every((s) => s is SpotubeFullArtistObject);
+
+    final isArtist = items.isNotEmpty &&
+        items.every(
+          (item) => item is SpotubeFullArtistObject,
+        );
+
     final scale = context.theme.scaling;
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
+    return Container(
+      width: double.infinity,
+      color: Colors.black,
+      padding: EdgeInsets.only(
+        top: 12 * scale,
+        bottom: 12 * scale,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Flexible(
-                child: DefaultTextStyle(
-                  style: context.theme.typography.h4.copyWith(
-                    color: context.theme.colorScheme.foreground,
+          Padding(
+            padding: EdgeInsets.symmetric(
+              horizontal: 16 * scale,
+            ),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(
+                  child: DefaultTextStyle(
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 22 * scale,
+                      fontWeight: FontWeight.w800,
+                      height: 1.15,
+                      letterSpacing: -0.35,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    child: title,
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  child: title,
                 ),
-              ),
-              if (titleTrailing != null) titleTrailing!,
-            ],
+                if (titleTrailing != null) ...[
+                  Gap(12 * scale),
+                  DefaultTextStyle(
+                    style: TextStyle(
+                      color: const Color(0xFFB3B3B3),
+                      fontSize: 13 * scale,
+                      fontWeight: FontWeight.w700,
+                      height: 1,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    child: titleTrailing!,
+                  ),
+                ],
+              ],
+            ),
           ),
+          Gap(10 * scale),
           if (error != null)
-            error!
+            Padding(
+              padding: EdgeInsets.symmetric(
+                horizontal: 16 * scale,
+              ),
+              child: error!,
+            )
           else
             SizedBox(
-              height: isArtist ? 250 : 225,
-              child: NotificationListener(
-                // disable multiple scrollbar to use this
-                onNotification: (notification) => true,
+              height: isArtist
+                  ? 222 * scale
+                  : 218 * scale,
+              child: NotificationListener<ScrollNotification>(
+                onNotification: (_) => true,
                 child: ScrollConfiguration(
                   behavior: ScrollConfiguration.of(context).copyWith(
                     dragDevices: PointerDeviceKind.values.toSet(),
+                    scrollbars: false,
                   ),
                   child: items.isEmpty
-                      ? ListView.builder(
+                      ? ListView.separated(
                           scrollDirection: Axis.horizontal,
+                          physics: const BouncingScrollPhysics(),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16 * scale,
+                          ),
                           itemCount: 5,
+                          separatorBuilder: (_, __) =>
+                              Gap(14 * scale),
                           itemBuilder: (context, index) {
-                            return AlbumCard(FakeData.albumSimple);
+                            return Skeletonizer(
+                              enabled: true,
+                              child: AlbumCard(
+                                FakeData.albumSimple,
+                              ),
+                            );
                           },
                         )
                       : InfiniteList(
                           scrollController: scrollController,
                           scrollDirection: Axis.horizontal,
-                          padding: const EdgeInsets.symmetric(vertical: 8.0),
+                          physics: const BouncingScrollPhysics(),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: 16 * scale,
+                          ),
                           itemCount: items.length,
                           onFetchData: onFetchMore,
-                          loadingBuilder: (context) => Skeletonizer(
+                          loadingBuilder: (context) {
+                            return Padding(
+                              padding: EdgeInsets.only(
+                                left: 14 * scale,
+                              ),
+                              child: Skeletonizer(
                                 enabled: true,
                                 child: isArtist
-                                    ? ArtistCard(FakeData.artist)
-                                    : AlbumCard(FakeData.albumSimple),
+                                    ? ArtistCard(
+                                        FakeData.artist,
+                                      )
+                                    : AlbumCard(
+                                        FakeData.albumSimple,
+                                      ),
                               ),
+                            );
+                          },
                           isLoading: isLoadingNextPage,
                           hasReachedMax: !hasNextPage,
-                          separatorBuilder: (context, index) => Gap(12 * scale),
+                          separatorBuilder: (context, index) =>
+                              Gap(14 * scale),
                           itemBuilder: (context, index) {
                             final item = items[index];
 
                             return switch (item) {
-                              SpotubeSimplePlaylistObject() => PlaylistCard(
-                                  item as SpotubeSimplePlaylistObject),
+                              SpotubeSimplePlaylistObject() =>
+                                PlaylistCard(
+                                  item,
+                                ),
                               SpotubeSimpleAlbumObject() =>
-                                AlbumCard(item as SpotubeSimpleAlbumObject),
+                                AlbumCard(
+                                  item,
+                                ),
                               SpotubeFullArtistObject() =>
-                                ArtistCard(item as SpotubeFullArtistObject),
+                                ArtistCard(
+                                  item,
+                                ),
                               _ => const SizedBox.shrink(),
                             };
-                          }),
+                          },
+                        ),
                 ),
               ),
             ),
