@@ -4,13 +4,11 @@ import 'package:auto_route/auto_route.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
-import 'package:spotube/collections/assets.gen.dart';
 import 'package:spotube/collections/routes.gr.dart';
 import 'package:spotube/components/image/universal_image.dart';
-import 'package:spotube/extensions/context.dart';
+import 'package:spotube/models/database/database.dart';
 import 'package:spotube/models/metadata/metadata.dart';
 import 'package:spotube/provider/history/recent.dart';
-import 'package:spotube/provider/metadata_plugin/core/user.dart';
 
 class HomeRecentlyPlayedSection extends HookConsumerWidget {
   const HomeRecentlyPlayedSection({super.key});
@@ -18,7 +16,6 @@ class HomeRecentlyPlayedSection extends HookConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final history = ref.watch(recentlyPlayedItems);
-    final currentUser = ref.watch(metadataPluginUserProvider);
 
     if (history.hasError) {
       return const SizedBox.shrink();
@@ -28,36 +25,14 @@ class HomeRecentlyPlayedSection extends HookConsumerWidget {
       return const _SpotifyRecentSkeleton();
     }
 
-    final historyData = history.asData?.value ?? const [];
-    final user = currentUser.asData?.value;
+    final historyData =
+        history.asData?.value ?? const <HistoryTableData>[];
 
-    final likedSongsPlaylist = user == null
-        ? null
-        : SpotubeSimplePlaylistObject(
-            id: 'user-liked-tracks',
-            name: context.l10n.liked_tracks,
-            description: context.l10n.liked_tracks_description,
-            externalUri: '',
-            owner: user,
-            images: [
-              SpotubeImageObject(
-                url: Assets.images.likedTracks.path,
-                width: 300,
-                height: 300,
-              ),
-            ],
-          );
-
-    final visibleItems = <_SpotifyRecentItem>[
-      if (likedSongsPlaylist != null)
-        _SpotifyRecentItem.likedSongs(likedSongsPlaylist),
-      for (final historyItem in historyData)
-        if (historyItem.playlist != null &&
-            historyItem.playlist!.id != 'user-liked-tracks')
-          _SpotifyRecentItem.playlist(historyItem.playlist!)
-        else if (historyItem.album != null)
-          _SpotifyRecentItem.album(historyItem.album!),
-    ].take(8).toList(growable: false);
+    final visibleItems = historyData
+        .map(_SpotifyRecentItem.fromHistory)
+        .whereType<_SpotifyRecentItem>()
+        .take(8)
+        .toList(growable: false);
 
     if (visibleItems.isEmpty) {
       return const SizedBox.shrink();
@@ -73,7 +48,7 @@ class HomeRecentlyPlayedSection extends HookConsumerWidget {
         gridDelegate:
             const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 2,
-          mainAxisExtent: 56,
+          mainAxisExtent: 64,
           mainAxisSpacing: 8,
           crossAxisSpacing: 8,
         ),
@@ -103,14 +78,6 @@ class _SpotifyRecentTile extends StatelessWidget {
       child: material.InkWell(
         onTap: () {
           switch (item.type) {
-            case _SpotifyRecentItemType.likedSongs:
-              context.navigateTo(
-                LikedPlaylistRoute(
-                  playlist: item.playlist!,
-                ),
-              );
-              break;
-
             case _SpotifyRecentItemType.playlist:
               final playlist = item.playlist!;
 
@@ -137,37 +104,19 @@ class _SpotifyRecentTile extends StatelessWidget {
         child: Row(
           children: [
             SizedBox(
-              width: 56,
-              height: 56,
-              child: item.type == _SpotifyRecentItemType.likedSongs
-                  ? const DecoratedBox(
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: [
-                            Color(0xFF450AF5),
-                            Color(0xFF8E8EE5),
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                      ),
-                      child: Center(
-                        child: Icon(
-                          Icons.favorite,
-                          color: Colors.white,
-                          size: 24,
-                        ),
-                      ),
-                    )
-                  : UniversalImage(
-                      path: item.imageUrl,
-                      fit: BoxFit.cover,
-                    ),
+              width: 64,
+              height: 64,
+              child: UniversalImage(
+                path: item.imageUrl,
+                width: 64,
+                height: 64,
+                fit: BoxFit.cover,
+              ),
             ),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 9,
+                  horizontal: 10,
                 ),
                 child: Text(
                   item.title,
@@ -206,7 +155,7 @@ class _SpotifyRecentSkeleton extends StatelessWidget {
           gridDelegate:
               const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            mainAxisExtent: 56,
+            mainAxisExtent: 64,
             mainAxisSpacing: 8,
             crossAxisSpacing: 8,
           ),
@@ -219,8 +168,8 @@ class _SpotifyRecentSkeleton extends StatelessWidget {
               child: const Row(
                 children: [
                   SizedBox(
-                    width: 56,
-                    height: 56,
+                    width: 64,
+                    height: 64,
                     child: ColoredBox(
                       color: Color(0xFF404040),
                     ),
@@ -228,11 +177,12 @@ class _SpotifyRecentSkeleton extends StatelessWidget {
                   Expanded(
                     child: Padding(
                       padding: EdgeInsets.symmetric(
-                        horizontal: 9,
+                        horizontal: 10,
                       ),
                       child: Text(
                         'Contenido reciente',
                         maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ),
                   ),
@@ -247,7 +197,6 @@ class _SpotifyRecentSkeleton extends StatelessWidget {
 }
 
 enum _SpotifyRecentItemType {
-  likedSongs,
   playlist,
   album,
 }
@@ -262,15 +211,6 @@ class _SpotifyRecentItem {
     this.playlist,
     this.album,
   });
-
-  factory _SpotifyRecentItem.likedSongs(
-    SpotubeSimplePlaylistObject playlist,
-  ) {
-    return _SpotifyRecentItem._(
-      type: _SpotifyRecentItemType.likedSongs,
-      playlist: playlist,
-    );
-  }
 
   factory _SpotifyRecentItem.playlist(
     SpotubeSimplePlaylistObject playlist,
@@ -290,9 +230,35 @@ class _SpotifyRecentItem {
     );
   }
 
+  static _SpotifyRecentItem? fromHistory(
+    HistoryTableData historyItem,
+  ) {
+    try {
+      switch (historyItem.type) {
+        case HistoryEntryType.playlist:
+          return _SpotifyRecentItem.playlist(
+            SpotubeSimplePlaylistObject.fromJson(
+              historyItem.data,
+            ),
+          );
+
+        case HistoryEntryType.album:
+          return _SpotifyRecentItem.album(
+            SpotubeSimpleAlbumObject.fromJson(
+              historyItem.data,
+            ),
+          );
+
+        case HistoryEntryType.track:
+          return null;
+      }
+    } catch (_) {
+      return null;
+    }
+  }
+
   String get title {
     return switch (type) {
-      _SpotifyRecentItemType.likedSongs => playlist!.name,
       _SpotifyRecentItemType.playlist => playlist!.name,
       _SpotifyRecentItemType.album => album!.name,
     };
@@ -300,8 +266,6 @@ class _SpotifyRecentItem {
 
   String get imageUrl {
     return switch (type) {
-      _SpotifyRecentItemType.likedSongs =>
-        Assets.images.likedTracks.path,
       _SpotifyRecentItemType.playlist =>
         playlist!.images.from200PxTo300PxOrSmallestImage(
           ImagePlaceholder.collection,
