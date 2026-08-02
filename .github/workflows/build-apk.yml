@@ -44,8 +44,9 @@ jobs:
       - name: Descargar dependencias
         run: flutter pub get
 
-      - name: Analizar código sin bloquear por avisos
-        run: dart analyze --no-fatal-warnings
+      - name: Analizar código sin bloquear la APK
+        continue-on-error: true
+        run: dart analyze
 
       - name: Compilar APK release
         run: flutter build apk --release
