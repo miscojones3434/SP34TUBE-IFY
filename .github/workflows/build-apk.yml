@@ -23,72 +23,48 @@ jobs:
           java-version: "17"
           cache: gradle
 
-      - name: Instalar Flutter real del proyecto
-        uses: subosito/flutter-action@v2.18.0
+      - name: Instalar Flutter del proyecto
+        uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.35.2"
           channel: stable
           cache: true
-
-      - name: Instalar Rust
-        uses: dtolnay/rust-toolchain@stable
 
       - name: Mostrar versiones
         run: |
           flutter --version
           dart --version
           java -version
-          rustc --version
 
-      - name: Crear firma temporal de compilación
+      - name: Crear variables requeridas
         run: |
-          keytool -genkeypair -noprompt \
-            -keystore android/app/sp34tube-ify-test.jks \
-            -storepass android \
-            -keypass android \
-            -alias sp34tubeify \
-            -keyalg RSA \
-            -keysize 2048 \
-            -validity 10000 \
-            -dname "CN=SP34TUBE-IFY, OU=PT34, O=PT34, L=Spain, S=Spain, C=ES"
-
-          cat > android/key.properties <<'EOF'
-          storePassword=android
-          keyPassword=android
-          keyAlias=sp34tubeify
-          storeFile=sp34tube-ify-test.jks
+          cat > .env <<'EOF'
+          ENABLE_UPDATE_CHECK=0
+          LASTFM_API_KEY=
+          LASTFM_API_SECRET=
+          RELEASE_CHANNEL=stable
+          HIDE_DONATIONS=1
           EOF
 
-      - name: Descargar dependencias Flutter
+      - name: Descargar dependencias
         run: flutter pub get
 
-      - name: Instalar dependencias Android de Spotube
+      - name: Generar archivos del proyecto
         run: |
-          dart cli/cli.dart install-dependencies \
-            --platform=android \
-            --arch=all
+          dart run build_runner build --delete-conflicting-outputs
+          test -s lib/collections/env.g.dart
 
-      - name: Compilar APK con el constructor real de Spotube
-        env:
-          CHANNEL: stable
-          FLUTTER_VERSION: "3.35.2"
-          DOTENV: |
-            ENABLE_UPDATE_CHECK=0
-            LASTFM_API_KEY=${{ secrets.LASTFM_API_KEY }}
-            LASTFM_API_SECRET=${{ secrets.LASTFM_API_SECRET }}
-            HIDE_DONATIONS=1
-        run: |
-          dart cli/cli.dart build --arch=all android
+      - name: Analizar sin detener la compilación
+        continue-on-error: true
+        run: dart analyze
 
-          test -s build/Spotube-android-all-arch.apk
-
-          cp build/Spotube-android-all-arch.apk \
-            build/SP34TUBE-IFY-test.apk
+      - name: Compilar APK release
+        run: flutter build apk --release
 
       - name: Subir APK compilada
         uses: actions/upload-artifact@v4
         with:
           name: SP34TUBE-IFY-APK
-          path: build/SP34TUBE-IFY-test.apk
+          path: build/app/outputs/flutter-apk/app-release.apk
           if-no-files-found: error
           retention-days: 14
