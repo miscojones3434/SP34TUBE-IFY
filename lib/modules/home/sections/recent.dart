@@ -1,5 +1,4 @@
 import 'package:auto_route/auto_route.dart';
-import 'package:flutter/material.dart';
 import 'package:hooks_riverpod/hooks_riverpod.dart';
 import 'package:shadcn_flutter/shadcn_flutter.dart';
 import 'package:skeletonizer/skeletonizer.dart';
@@ -20,20 +19,12 @@ class HomeRecentlyPlayedSection extends HookConsumerWidget {
     }
 
     if (history.isLoading) {
-      return const Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _SpotifyHeader(),
-          _SpotifyRecentSkeleton(),
-        ],
-      );
+      return const _SpotifyRecentSkeleton();
     }
 
     final historyData = history.asData?.value ?? const [];
 
-    // Inyectamos la tarjeta fija de "Canciones que te gustan" al principio
     final visibleItems = <_SpotifyRecentItem>[
-      _SpotifyRecentItem.likedSongs(),
       for (final item in historyData)
         if (item.playlist != null)
           _SpotifyRecentItem.playlist(item.playlist!)
@@ -45,98 +36,28 @@ class HomeRecentlyPlayedSection extends HookConsumerWidget {
       return const SizedBox.shrink();
     }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const _SpotifyHeader(),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
-          child: GridView.builder(
-            shrinkWrap: true,
-            primary: false,
-            physics: const NeverScrollableScrollPhysics(),
-            itemCount: visibleItems.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              mainAxisExtent: 56, // Ajustado para coincidir con la proporción de la imagen real
-              mainAxisSpacing: 8,
-              crossAxisSpacing: 8,
-            ),
-            itemBuilder: (context, index) {
-              return _SpotifyRecentTile(
-                item: visibleItems[index],
-              );
-            },
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-// --- NUEVO: Cabecera con Perfil y Filtros ---
-class _SpotifyHeader extends StatelessWidget {
-  const _SpotifyHeader();
-
-  @override
-  Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-      child: Row(
-        children: [
-          const CircleAvatar(
-            radius: 18,
-            backgroundColor: Color(0xFFD4815D), // Color similar al de la imagen
-            child: Text(
-              'S',
-              style: TextStyle(
-                color: Colors.black,
-                fontWeight: FontWeight.w700,
-                fontSize: 18,
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          _FilterChip(label: 'Todos', isSelected: true),
-          const SizedBox(width: 8),
-          _FilterChip(label: 'Música', isSelected: false),
-          const SizedBox(width: 8),
-          _FilterChip(label: 'Pódcasts', isSelected: false),
-        ],
-      ),
-    );
-  }
-}
-
-class _FilterChip extends StatelessWidget {
-  final String label;
-  final bool isSelected;
-
-  const _FilterChip({
-    required this.label,
-    required this.isSelected,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      decoration: BoxDecoration(
-        color: isSelected ? const Color(0xFF1ED760) : const Color(0xFF2A2A2A),
-        borderRadius: BorderRadius.circular(20), // Forma de píldora
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          color: isSelected ? Colors.black : Colors.white,
-          fontSize: 13,
-          fontWeight: FontWeight.w600,
+      padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+      child: GridView.builder(
+        shrinkWrap: true,
+        primary: false,
+        physics: const NeverScrollableScrollPhysics(),
+        itemCount: visibleItems.length,
+        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          crossAxisCount: 2,
+          mainAxisExtent: 64,
+          mainAxisSpacing: 8,
+          crossAxisSpacing: 8,
         ),
+        itemBuilder: (context, index) {
+          return _SpotifyRecentTile(
+            item: visibleItems[index],
+          );
+        },
       ),
     );
   }
 }
-// --------------------------------------------
 
 class _SpotifyRecentTile extends StatelessWidget {
   final _SpotifyRecentItem item;
@@ -147,74 +68,48 @@ class _SpotifyRecentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Widget imageWidget;
-
-    // Lógica para renderizar la imagen web o el degradado de favoritos
-    if (item.type == _SpotifyRecentItemType.likedSongs) {
-      imageWidget = Container(
-        width: 56,
-        height: 56,
-        decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFF450AF5), Color(0xFF8E8EE5)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-        ),
-        child: const Icon(
-          Icons.favorite,
-          color: Colors.white,
-          size: 24,
-        ),
-      );
-    } else {
-      imageWidget = SizedBox(
-        width: 56,
-        height: 56,
-        child: UniversalImage(
-          path: item.imageUrl,
-          fit: BoxFit.cover,
-        ),
-      );
-    }
-
     return Material(
-      color: const Color(0xFF2A2A2A), // Fondo de la tarjeta
-      borderRadius: BorderRadius.circular(6), // Esquinas ligeramente más redondeadas
+      color: const Color(0xFF2A2A2A),
+      borderRadius: BorderRadius.circular(4),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
           switch (item.type) {
             case _SpotifyRecentItemType.playlist:
               final playlist = item.playlist!;
+
               context.navigateTo(
                 PlaylistRoute(
                   id: playlist.id,
                   playlist: playlist,
                 ),
               );
-              break;
+
             case _SpotifyRecentItemType.album:
               final album = item.album!;
+
               context.navigateTo(
                 AlbumRoute(
                   id: album.id,
                   album: album,
                 ),
               );
-              break;
-            case _SpotifyRecentItemType.likedSongs:
-              // TODO: Navegar a la ruta de canciones que te gustan
-              break;
           }
         },
         child: Row(
           children: [
-            imageWidget,
+            SizedBox(
+              width: 64,
+              height: 64,
+              child: UniversalImage(
+                path: item.imageUrl,
+                fit: BoxFit.cover,
+              ),
+            ),
             Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(
-                  horizontal: 8,
+                  horizontal: 10,
                 ),
                 child: Text(
                   item.title,
@@ -244,15 +139,16 @@ class _SpotifyRecentSkeleton extends StatelessWidget {
     return Skeletonizer(
       enabled: true,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 16, 16, 24),
+        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
         child: GridView.builder(
           shrinkWrap: true,
           primary: false,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: 8,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate:
+              const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
-            mainAxisExtent: 56,
+            mainAxisExtent: 64,
             mainAxisSpacing: 8,
             crossAxisSpacing: 8,
           ),
@@ -260,13 +156,13 @@ class _SpotifyRecentSkeleton extends StatelessWidget {
             return Container(
               decoration: BoxDecoration(
                 color: const Color(0xFF2A2A2A),
-                borderRadius: BorderRadius.circular(6),
+                borderRadius: BorderRadius.circular(4),
               ),
               child: const Row(
                 children: [
                   SizedBox(
-                    width: 56,
-                    height: 56,
+                    width: 64,
+                    height: 64,
                     child: ColoredBox(
                       color: Color(0xFF404040),
                     ),
@@ -277,7 +173,7 @@ class _SpotifyRecentSkeleton extends StatelessWidget {
                         horizontal: 10,
                       ),
                       child: Text(
-                        'Cargando...',
+                        'Contenido reciente',
                         maxLines: 2,
                       ),
                     ),
@@ -295,7 +191,6 @@ class _SpotifyRecentSkeleton extends StatelessWidget {
 enum _SpotifyRecentItemType {
   playlist,
   album,
-  likedSongs, // Nuevo tipo añadido
 }
 
 class _SpotifyRecentItem {
@@ -308,12 +203,6 @@ class _SpotifyRecentItem {
     this.playlist,
     this.album,
   });
-
-  factory _SpotifyRecentItem.likedSongs() {
-    return const _SpotifyRecentItem._(
-      type: _SpotifyRecentItemType.likedSongs,
-    );
-  }
 
   factory _SpotifyRecentItem.playlist(
     SpotubeSimplePlaylistObject playlist,
@@ -337,7 +226,6 @@ class _SpotifyRecentItem {
     return switch (type) {
       _SpotifyRecentItemType.playlist => playlist!.name,
       _SpotifyRecentItemType.album => album!.name,
-      _SpotifyRecentItemType.likedSongs => 'Canciones que te gustan',
     };
   }
 
@@ -351,7 +239,6 @@ class _SpotifyRecentItem {
         album!.images.from200PxTo300PxOrSmallestImage(
           ImagePlaceholder.collection,
         ),
-      _SpotifyRecentItemType.likedSongs => '', // No requiere URL web
     };
   }
 }
